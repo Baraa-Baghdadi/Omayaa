@@ -11,17 +11,17 @@
     </div>
 
     <!-- Nav Items -->
-    <ul class="nav flex-column w-100 px-2">
+    <ul class="nav flex-column w-100 px-2" dir="rtl">
       <li class="nav-item c-pointer">
         <a href="/app/dashboard" onclick="window.top.location.href='/app/dashboard';" class="nav-link d-flex align-items-center text-light px-3 py-2">
-          <i class="bi bi-speedometer2 fs-4"></i>
-          <span *ngIf="sidebarExpanded" class="ms-3">Dashboard</span>
+          <i class="bi bi-speedometer2 fs-4 ms-2"></i>
+          <span *ngIf="sidebarExpanded" class="ms-3">لوحة التحكم</span>
         </a>
       </li>
       <li class="nav-item c-pointer">
-        <a href="/app/dashboard" onclick="window.top.location.href='/app/dashboard';" class="nav-link d-flex align-items-center text-light  px-3 py-2">
-          <i class="bi bi-file-earmark-text fs-4"></i>
-          <span *ngIf="sidebarExpanded" class="ms-3">Reports</span>
+        <a href="/app/Providers" onclick="window.top.location.href='/app/Providers';" class="nav-link d-flex align-items-center text-light  px-3 py-2">
+          <i class="bi bi-file-earmark-text fs-4 ms-2"></i>
+          <span *ngIf="sidebarExpanded" class="ms-5">المزودين</span>
         </a>
       </li>
     </ul>
