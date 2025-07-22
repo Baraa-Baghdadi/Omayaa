@@ -107,7 +107,7 @@ namespace Concord.API.Controllers.Accounts
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred during login.");
+                return StatusCode(500, ex.Message);
             }
         }
 
