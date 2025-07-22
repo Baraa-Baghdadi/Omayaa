@@ -22,7 +22,7 @@ namespace Concord.Domain.Seed.Identity
             }
 
             // Optionally, you can also seed an admin user with the roles
-            var adminUser = await userManager.FindByEmailAsync("admin@bellaBeauty.com");
+            var adminUser = await userManager.FindByEmailAsync("admin@omayya.com");
             if (adminUser == null)
             {
                 adminUser = new ApplicationUser
@@ -36,7 +36,7 @@ namespace Concord.Domain.Seed.Identity
                 adminUser.PhoneNumberConfirmed = true;
                 adminUser.EmailConfirmed = true;
 
-                var result = await userManager.CreateAsync(adminUser, "BellaBeautyP@ssw0rd");
+                var result = await userManager.CreateAsync(adminUser, "P@ssw0rd");
                 if (result.Succeeded)
                 {
                     await userManager.AddToRoleAsync(adminUser, "Admin");
