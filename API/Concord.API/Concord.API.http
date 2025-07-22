@@ -1,0 +1,6 @@
+@Concord.API_HostAddress = http://localhost:5019
+
+GET {{Concord.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

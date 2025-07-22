@@ -1,0 +1,83 @@
+<div class="main d-flex justify-content-center align-items-center vh-75 mt-4" lang="ar" dir="rtl">
+  <form [formGroup]="form" class="login-form p-5 rounded shadow bg-white" (ngSubmit)="onRegister()">
+    <h3 class="login-title fw-bold mb-4 text-center">إنشاء حساب</h3>
+
+    <div class="mb-3">
+      <label for="providerName" class="form-label fw-semibold gold-text">اسم المزود</label>
+      <input
+        type="email"
+        class="form-control border-gold"
+        id="providerName"
+        formControlName="providerName"
+        placeholder="ادخل الإيميل"
+        required
+      />
+    </div>
+
+    <div class="mb-3">
+      <label for="password" class="form-label fw-semibold gold-text">كلمة المرور</label>
+      <input
+        type="password"
+        class="form-control border-gold"
+        id="password"
+        formControlName="password"
+        placeholder="ادخل كلمة المرور"
+        required
+      />
+    </div>
+
+    <div class="mb-3">
+      <label for="confirmPassword" class="form-label fw-semibold gold-text">تأكيد كلمة المرور</label>
+      <input
+        type="password"
+        class="form-control border-gold"
+        id="confirmPassword"
+        formControlName="confirmPassword"
+        placeholder="أعد إدخال كلمة المرور"
+        required
+      />
+    </div>
+
+    <div class="mb-3">
+      <label for="mobile" class="form-label fw-semibold gold-text">رقم الموبايل</label>
+      <input
+        type="text"
+        class="form-control border-gold"
+        id="mobile"
+        formControlName="mobile"
+        placeholder="0900000000"
+        required
+      />
+    </div>
+
+    <div class="mb-3">
+      <label for="telephone" class="form-label fw-semibold gold-text">رقم الهاتف</label>
+      <input
+        type="text"
+        class="form-control border-gold"
+        id="telephone"
+        formControlName="telephone"
+        placeholder="0110000000"
+      />
+    </div>
+
+    <div class="mb-3">
+      <label for="address" class="form-label fw-semibold gold-text">العنوان</label>
+      <textarea
+        class="form-control border-gold"
+        id="address"
+        formControlName="address"
+        placeholder="أدخل العنوان"
+        rows="2"
+      ></textarea>
+    </div>
+
+    <button type="submit" class="btn login-btn w-100 mt-4 fw-bold text-white" [disabled]="form.invalid">
+      إنشاء الحساب
+    </button>
+
+    <div class="started_text mt-4 text-center">
+      <a href="/login" class="gold-link">أو تسجيل الدخول إلى حسابك</a>
+    </div>
+  </form>
+</div>

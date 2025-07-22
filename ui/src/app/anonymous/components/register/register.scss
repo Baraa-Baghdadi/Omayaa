@@ -1,0 +1,47 @@
+.main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  // background-color: #222222 !important;
+}
+
+form {  
+  width: 30%;
+}
+
+.bg-white {
+  background-color: white !important;
+}
+
+.login-form {
+  max-width: 550px;
+  width: 100%;
+}
+
+.login-title,
+.gold-text {
+  color: #bfa100;
+}
+
+.border-gold {
+  border: 1px solid #bfa100 !important;
+}
+
+.border-gold:focus {
+  box-shadow: 0 0 0 0.25rem rgba(191, 161, 0, 0.25);
+  border-color: #bfa100 !important;
+}
+
+.login-btn {
+  background-color: #bfa100;
+  border: none;
+}
+
+.login-btn:disabled {
+  background-color: #e0c964;
+}
+
+.gold-link {
+  color: #bfa100;
+  text-decoration: underline;
+}

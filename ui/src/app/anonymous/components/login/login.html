@@ -1,0 +1,38 @@
+<div class="main d-flex justify-content-center align-items-center vh-75 mt-5 bg-white" lang="ar" dir="rtl">
+  <form [formGroup]="form" class="login-form p-5 rounded shadow bg-white" (ngSubmit)="onSubmit()">
+    <h3 class="login-title fw-bold mb-4 text-center">تسجيل الدخول</h3>
+    <div class="mb-3">
+      <label for="username" class="form-label fw-semibold gold-text">الإيميل</label>
+      <input
+        type="email"
+        class="form-control border-gold"
+        id="username"
+        formControlName="providerName"
+        placeholder="الايميل"
+        name="username"
+        required
+      />
+    </div>
+
+    <div class="mb-3">
+      <label for="password" class="form-label fw-semibold gold-text">كلمة المرور</label>
+      <input
+        type="password"
+        formControlName="password"
+        class="form-control border-gold"
+        id="password"
+        placeholder="كلمة المرور"
+        name="password"
+        required
+      />
+    </div>
+
+    <button type="submit" class="btn login-btn w-100 mt-4 fw-bold text-white" [disabled]="form.invalid">
+      تسجيل الدخول
+    </button>
+
+    <div class="started_text mt-4 text-center">
+      <a href="/register" class="gold-link">أو إنشاء حساب جديد</a>
+    </div>
+  </form>
+</div>
