@@ -3,28 +3,23 @@
   <nav 
     [class.expanded]="sidebarExpanded" 
     [ngStyle]="{ width: sidebarExpanded ? '280px' : '80px' }"
-    class="sidebar bg-light text-white d-flex flex-column align-items-center"
+    class="sidebar bg-dark text-white d-flex flex-column align-items-center"
   >
     <!-- Logo -->
-    <div class="mb-4">
-      <img 
-        src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/2560px-Netflix_2015_logo.svg.png" 
-        alt="Company Logo" 
-        class="img-fluid" 
-        width="75" 
-      />
+    <div class="mb-4 mt-4">
+      <span class="navbar-brand-custom">أميّة</span>
     </div>
 
     <!-- Nav Items -->
     <ul class="nav flex-column w-100 px-2">
-      <li class="nav-item">
-        <a routerLink="/app/dashboard" routerLinkActive="active" class="nav-link d-flex align-items-center dark-blue px-3 py-2">
+      <li class="nav-item c-pointer">
+        <a href="/app/dashboard" onclick="window.top.location.href='/app/dashboard';" class="nav-link d-flex align-items-center text-light px-3 py-2">
           <i class="bi bi-speedometer2 fs-4"></i>
           <span *ngIf="sidebarExpanded" class="ms-3">Dashboard</span>
         </a>
       </li>
-      <li class="nav-item">
-        <a routerLink="/app/report" routerLinkActive="active" class="nav-link d-flex align-items-center dark-blue  px-3 py-2">
+      <li class="nav-item c-pointer">
+        <a href="/app/dashboard" onclick="window.top.location.href='/app/dashboard';" class="nav-link d-flex align-items-center text-light  px-3 py-2">
           <i class="bi bi-file-earmark-text fs-4"></i>
           <span *ngIf="sidebarExpanded" class="ms-3">Reports</span>
         </a>
@@ -35,7 +30,7 @@
 
     <!-- Toggle Button -->
     <button 
-      class="btn btn-outline-dark mb-3 toggle-btn"
+      class="btn btn-outline-light mb-3 toggle-btn"
       (click)="sidebarExpanded = !sidebarExpanded"
       [attr.aria-expanded]="sidebarExpanded"
       aria-label="Toggle sidebar"
