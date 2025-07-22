@@ -20,6 +20,7 @@ export class Login {
 
   ngOnInit() {
     if (this.authService.isLogin$()) {
+      this.buildForm();
       this.router.navigate(['app']);
     }
     else{
