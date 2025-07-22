@@ -1,1 +1,18 @@
-<p>confirmation-dialog works!</p>
+
+<div class="modal-header">
+    <h4 class="modal-title">{{ title }}</h4>
+    <i (click)="dismiss()" style="position: absolute;right: 15px;top:22px" 
+     class="fa fa-times fs-4 c-pointer" aria-hidden="true">
+  </i>
+  </div>
+  <div class="modal-body">
+    {{ message }}
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="decline()">
+      {{ btnCancelText }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="accept()">
+      {{ btnOkText }}
+    </button>
+  </div>
