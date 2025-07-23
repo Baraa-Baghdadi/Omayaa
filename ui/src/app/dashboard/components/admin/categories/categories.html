@@ -139,7 +139,6 @@
                     <i class="ms-1" [ngClass]="getSortIcon('ProductCount')"></i>
                   </button>
                 </th>
-                <th scope="col">تاريخ الإنشاء</th>
                 <th scope="col">الإجراءات</th>
               </tr>
             </thead>
@@ -159,9 +158,6 @@
                   <span class="badge" [ngClass]="category.productCount > 0 ? 'badge-success' : 'badge-secondary'">
                     {{ category.productCount }}
                   </span>
-                </td>
-                <td>
-                  <span>{{ formatDate(category.createdAt) }}</span>
                 </td>
                 <td>
                   <div class="btn-group" role="group">
