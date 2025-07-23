@@ -1,4 +1,5 @@
 using Concord.Application.Services.Account.Providers;
+using Concord.Application.Services.Categories;
 using Concord.Application.Services.Mail;
 using Concord.Application.Services.Providers;
 using Concord.Application.Services.RefreshToken;
@@ -80,6 +81,7 @@ builder.Services.AddTransient<IGetPrincipleDataFromExpiredToken, GetPrincipleDat
 builder.Services.AddTransient<IMailingService, MailingService>();
 builder.Services.AddTransient<IProviderAccountService, ProviderAccountService>();
 builder.Services.AddTransient<IProviderManagementService, ProviderManagementService>();
+//builder.Services.AddTransient<ICategoryService, CategoryService>();
 
 
 // For Add Auto mapper to our project

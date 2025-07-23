@@ -4,9 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Concord.Domain.Models.Products
 {
-    public class Product
+    public class Product : BaseEntity
     {
-        public int Id { get; set; }
 
         [Required, MaxLength(150)]
         public string Name { get; set; }
@@ -19,7 +18,7 @@ namespace Concord.Domain.Models.Products
         [Url]
         public string ImageUrl { get; set; }
 
-        public int CategoryId { get; set; }
+        public Guid CategoryId { get; set; }
         public Category Category { get; set; }
     }
 }
