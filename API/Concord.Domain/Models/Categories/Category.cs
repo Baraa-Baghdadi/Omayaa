@@ -3,9 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Concord.Domain.Models.Categories
 {
-    public class Category
+    public class Category : BaseEntity
     {
-        public int Id { get; set; }
 
         [Required, MaxLength(100)]
         public string Name { get; set; }
