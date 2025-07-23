@@ -29,10 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Concord.Application\Concord.Application.csproj" />
     <ProjectReference Include="..\Concord.Domain\Concord.Domain.csproj" />
   </ItemGroup>
