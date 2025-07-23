@@ -9,6 +9,7 @@ export interface ProviderManagementDto {
   providerName: string;
   telephone: string;
   mobile: string;
+  address?:string;
   creationTime: Date;
   email?: string;
   displayName?: string;

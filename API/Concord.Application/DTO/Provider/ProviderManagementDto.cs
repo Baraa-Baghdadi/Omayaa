@@ -32,6 +32,7 @@ namespace Concord.Application.DTO.Provider
         /// Provider mobile number
         /// </summary>
         public string Mobile { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
 
         /// <summary>
         /// Account creation date and time

@@ -77,6 +77,7 @@ namespace Concord.Application.Services.Providers
                         ProviderName = provider.ProviderName,
                         Telephone = provider.Telephone,
                         Mobile = provider.Mobile,
+                        Address = provider.Address,
                         CreationTime = provider.CreationTime,
                         Email = user?.Email,
                         DisplayName = user?.DisplayName,

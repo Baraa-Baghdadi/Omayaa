@@ -135,6 +135,7 @@
                   </button>
                 </th>
                 <th scope="col">معلومات الاتصال</th>
+                <th scope="col">العنوان</th>
                 <th scope="col">
                   <button 
                     class="btn btn-link p-0 text-decoration-none sort-btn"
@@ -169,6 +170,9 @@
                       <span>{{ provider.telephone }}</span>
                     </div>
                   </div>
+                </td>
+                <td>
+                  <span class="text-truncate">{{ provider.address }}</span>
                 </td>
                 <td>
                   <span>{{ formatDate(provider.creationTime) }}</span>

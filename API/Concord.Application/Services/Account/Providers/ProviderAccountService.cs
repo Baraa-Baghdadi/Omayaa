@@ -179,7 +179,7 @@ namespace Concord.Application.Services.Account.Providers
             await _userManager.AddToRoleAsync(user, "Provider");
 
 
-            var provider = new Provider(Guid.NewGuid(),tenantId,registerDto.ProviderName,registerDto.Telephone,registerDto.Mobile,DateTime.Now);
+            var provider = new Provider(Guid.NewGuid(),tenantId,registerDto.ProviderName,registerDto.Telephone,registerDto.Mobile,registerDto.Address,DateTime.Now);
 
             await _providerRepository.AddAsync(provider);
             await _providerRepository.SaveChangesAsync();
