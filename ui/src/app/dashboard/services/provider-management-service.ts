@@ -64,7 +64,7 @@ export interface UpdateVerificationRequestDto {
 }
 
 export interface LockAccountRequestDto {
-  lockUntil?: Date;
+  lockUntil?: any;
   reason?: string;
 }
 

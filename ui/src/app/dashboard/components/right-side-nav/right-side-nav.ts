@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ThemeService } from '../../../shared/services/theme-service';
+import { Auth } from '../../../shared/services/auth';
 
 @Component({
   selector: 'app-right-side-nav',
@@ -10,7 +11,7 @@ import { ThemeService } from '../../../shared/services/theme-service';
 export class RightSideNav {
   darkMode = false;
 
-  constructor(private themeService: ThemeService) {
+  constructor(private themeService: ThemeService,private authService:Auth) {
     this.darkMode = this.themeService.getMode() === 'dark';
   }
 
@@ -18,5 +19,9 @@ export class RightSideNav {
     this.darkMode = !this.darkMode;
     const mode = this.darkMode ? 'dark' : 'light';
     this.themeService.setMode(mode);
+  }
+
+  logOut(){
+    this.authService.logOut();
   }
 }

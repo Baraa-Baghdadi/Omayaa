@@ -25,6 +25,7 @@ namespace Concord.Application.Services.Token
                 new Claim(ClaimTypes.Email,user.Email),
                 new Claim(ClaimTypes.Name,user.UserName),
                 new Claim(ClaimTypes.Role,user.Role),
+                new Claim("Displayname",user.DisplayName.ToString() ?? string.Empty.ToString()),
                 new Claim("TenantId",user.TenantId.ToString() ?? Guid.Empty.ToString())
             };
 
