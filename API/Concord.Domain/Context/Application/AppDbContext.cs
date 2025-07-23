@@ -12,7 +12,6 @@ namespace Concord.Domain.Context.Application
 
         public DbSet<Provider> Providers { get; set; }
         public DbSet<Category> Categories { get; set; }
-        public DbSet<Subcategory> Subcategories { get; set; }
         public DbSet<Product> Products { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -23,18 +22,11 @@ namespace Concord.Domain.Context.Application
                 b.ToTable("Providers");
             });
 
-            // One-to-Many: Category -> Subcategories
+            // Category - Product: one-to-many
             modelBuilder.Entity<Category>()
-                .HasMany(c => c.Subcategories)
-                .WithOne(sc => sc.Category)
-                .HasForeignKey(sc => sc.CategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // One-to-Many: Subcategory -> Products
-            modelBuilder.Entity<Subcategory>()
-                .HasMany(sc => sc.Products)
-                .WithOne(p => p.Subcategory)
-                .HasForeignKey(p => p.SubcategoryId)
+                .HasMany(c => c.Products)
+                .WithOne(p => p.Category)
+                .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

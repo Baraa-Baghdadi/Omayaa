@@ -14,10 +14,12 @@ namespace Concord.Domain.Models.Products
         [Column(TypeName = "decimal(10,2)")]
         public decimal Price { get; set; }
 
+        public int Quantity { get; set; }
+
         [Url]
         public string ImageUrl { get; set; }
 
-        public int SubcategoryId { get; set; }
-        public Subcategory Subcategory { get; set; }
+        public int CategoryId { get; set; }
+        public Category Category { get; set; }
     }
 }
