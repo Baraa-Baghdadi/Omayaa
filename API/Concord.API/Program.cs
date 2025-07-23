@@ -81,7 +81,7 @@ builder.Services.AddTransient<IGetPrincipleDataFromExpiredToken, GetPrincipleDat
 builder.Services.AddTransient<IMailingService, MailingService>();
 builder.Services.AddTransient<IProviderAccountService, ProviderAccountService>();
 builder.Services.AddTransient<IProviderManagementService, ProviderManagementService>();
-//builder.Services.AddTransient<ICategoryService, CategoryService>();
+builder.Services.AddTransient<ICategoryService, CategoryService>();
 
 
 // For Add Auto mapper to our project
