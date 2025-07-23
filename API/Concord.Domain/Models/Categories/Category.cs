@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Concord.Domain.Models.Products;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -14,6 +15,6 @@ namespace Concord.Domain.Models.Categories
         [Required, MaxLength(100)]
         public string Name { get; set; }
 
-        public ICollection<Subcategory> Subcategories { get; set; }
+        public ICollection<Product> Products { get; set; }
     }
 }
