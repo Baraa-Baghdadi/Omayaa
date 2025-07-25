@@ -13,11 +13,6 @@
         </p>
       </div>
     </div>
-    <div class="hero-actions">
-      <div class="back-icon">
-        <i class="fas fa-undo"></i>
-      </div>
-    </div>
   </div>
 
   <!-- Statistics Cards -->
@@ -31,8 +26,8 @@
       </div>
       <div class="col-lg-3 col-md-6">
         <div class="stat-card active">
-          <div class="stat-value">{{ statistics.activeProviders }}</div>
-          <div class="stat-label">المزودين النشطين</div>
+          <div class="stat-value">{{ statistics.registeredToday }}</div>
+          <div class="stat-label">جديد هذا اليوم</div>
         </div>
       </div>
       <div class="col-lg-3 col-md-6">
@@ -162,6 +157,7 @@
               </button>
             </th>
             <th>المعلومات</th>
+            <th>العنوان</th>
             <th class="text-center">
               <button 
                 class="sort-btn"
@@ -171,6 +167,7 @@
                 <i class="sort-icon" [ngClass]="getSortIcon('CreationTime')"></i>
               </button>
             </th>
+            <th>الإجراءات</th>
           </tr>
         </thead>
         <tbody>
@@ -196,11 +193,29 @@
                 <div class="provider-contact">{{ provider.mobile }}</div>
               </div>
             </td>
+            <td><span class="text-truncate">{{provider.address}}</span></td>
             <td>
               <div class="forecast-date me-2">
                 {{ formatDate(provider.creationTime) }}
               </div>
             </td>
+            <td> 
+            <div ngbDropdown container="body" class="d-inline-block">
+              <button
+                class="btn btn-outline-warning filter-toggle btn-sm dropdown-toggle rounded"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                ngbDropdownToggle
+              >
+                <i class="fa fa-cog ms-2"></i>الإجراءات
+              </button>
+              <div ngbDropdownMenu>
+                <button ngbDropdownItem>
+                  قفل الحساب
+                </button>
+              </div>
+            </div>
+          </td>
           </tr>
         </tbody>
       </table>
