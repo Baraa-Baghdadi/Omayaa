@@ -45,7 +45,7 @@
     </div>
   </div>
 
-    <!-- Filters Section -->
+  <!-- Filters Section -->
   <div class="filters-section">
     <div class="row g-3 align-items-end">
       <div class="col-md-3">
@@ -83,17 +83,17 @@
           </div>
         </div>
         
-        <!-- <div class="col-lg-3 col-md-6">
+        <div class="col-lg-3 col-md-6">
           <select 
             class="form-select modern-select"
-            [(ngModel)]="selectedVerification"
+            [(ngModel)]="selectedStatus"
             (ngModelChange)="onFilterChange()"
           >
-            <option *ngFor="let verification of verificationOptions" [value]="verification.value">
-              {{ verification.label }}
+            <option *ngFor="let status of statusOptions" [value]="status.value">
+              {{ status.label }}
             </option>
           </select>
-        </div> -->
+        </div>
         
         <div class="col-lg-2 col-md-6">
           <button 
@@ -129,13 +129,6 @@
   <!-- Table Section -->
   <div class="table-section" *ngIf="!loading">
     <div class="table-header">
-        <!-- <div class="table-controls">
-          <div class="show-entries">
-            <span>{{ pageSize }}</span>
-            <span class="control-label">عرض</span>
-          </div>
-        </div> -->
-      
       <div class="table-title">
         <i class="fas fa-th table-icon"></i>
         <span class="title-text">إدارة المزودين</span>
@@ -158,12 +151,13 @@
             </th>
             <th>المعلومات</th>
             <th>العنوان</th>
+            <th class="text-center">حالة الحساب</th>
             <th class="text-center">
               <button 
                 class="sort-btn"
                 (click)="onSort('CreationTime')"
               >
-                  تاريخ التسجيل
+                تاريخ التسجيل
                 <i class="sort-icon" [ngClass]="getSortIcon('CreationTime')"></i>
               </button>
             </th>
@@ -177,13 +171,6 @@
                 {{ (currentPage - 1) * pageSize + i + 1 }}
               </div>
             </td>
-            <!-- <td>
-              <div class="provider-trigger">
-                <span class="trigger-badge" [ngClass]="getStatusBadgeClass(provider.accountStatus)">
-                  {{ provider.accountStatus }}
-                </span>
-              </div>
-            </td> -->
             <td>
               <div class="provider-name">{{ provider.providerName }}</div>
             </td>
@@ -193,32 +180,58 @@
                 <div class="provider-contact">{{ provider.mobile }}</div>
               </div>
             </td>
-            <td><span class="text-truncate">{{provider.address}}</span></td>
-            <td>
-              <div class="forecast-date me-2">
+            <td><span class="text-truncate">{{ provider.address }}</span></td>
+            <td class="text-center">
+              <div class="provider-trigger">
+                <span class="trigger-badge" [ngClass]="getProviderStatusBadgeClass(provider)">
+                  <i [class]="getProviderStatusIcon(provider)" style="margin-left: 5px;"></i>
+                  {{ getProviderStatusText(provider) }}
+                </span>
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="forecast-date">
                 {{ formatDate(provider.creationTime) }}
               </div>
             </td>
             <td> 
-            <div ngbDropdown container="body" class="d-inline-block">
-              <button
-                class="btn btn-outline-warning filter-toggle btn-sm dropdown-toggle rounded"
-                data-toggle="dropdown"
-                aria-haspopup="true"
-                ngbDropdownToggle
-              >
-                <i class="fa fa-cog ms-2"></i>الإجراءات
-              </button>
-              <div ngbDropdownMenu>
-                <button ngbDropdownItem>
-                  قفل الحساب
+              <div ngbDropdown container="body" class="d-inline-block">
+                <button
+                  class="btn btn-outline-warning filter-toggle btn-sm dropdown-toggle rounded"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  ngbDropdownToggle
+                  [disabled]="actionLoading[provider.tenantId]"
+                >
+                  <span *ngIf="actionLoading[provider.tenantId]" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                  <i *ngIf="!actionLoading[provider.tenantId]" class="fa fa-cog ms-2"></i>
+                  الإجراءات
                 </button>
-                <button ngbDropdownItem>
-                   الغاء قفل الحساب 
-                </button>
+                <div ngbDropdownMenu>
+                  <ng-template #unlockOption>
+                    <button 
+                      ngbDropdownItem 
+                      (click)="unlockProvider(provider)"
+                      class="text-success"
+                    >
+                      <i class="fas fa-unlock me-2"></i>
+                      إلغاء قفل الحساب
+                    </button>
+                  </ng-template>
+                  
+                  <div class="dropdown-divider"></div>
+                  
+                  <button 
+                    ngbDropdownItem 
+                    (click)="toggleVerification(provider)"
+                    [class]="provider.isEmailVerified && provider.isPhoneVerified ? 'text-warning' : 'text-info'"
+                  >
+                    <i [class]="provider.isEmailVerified && provider.isPhoneVerified ? 'fas fa-user-times' : 'fas fa-user-check'" class="me-2"></i>
+                    {{ provider.isEmailVerified && provider.isPhoneVerified ? 'إلغاء التفعيل' : 'تفعيل الحساب' }}
+                  </button>
+                </div>
               </div>
-            </div>
-          </td>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -273,3 +286,4 @@
     </div>
   </div>
 </div>
+

@@ -28,7 +28,7 @@ export class Provider implements OnInit {
   selectedStatus = '';
   selectedVerification = '';
   currentPage = 1;
-  pageSize = 25; // Updated to match the design (25 show)
+  pageSize = 10;
   totalPages = 0;
   totalCount = 0;
   sortBy = 'CreationTime';
@@ -40,6 +40,10 @@ export class Provider implements OnInit {
   lockModal: any;
   lockReason = '';
   lockUntilDate = '';
+  lockingProvider = false;
+
+  // Action loading states
+  actionLoading: { [key: string]: boolean } = {};
 
   // Status options
   statusOptions = [
@@ -47,6 +51,7 @@ export class Provider implements OnInit {
     { value: 'نشط', label: 'نشط' },
     { value: 'غير نشط', label: 'غير نشط' },
     { value: 'معطل', label: 'معطل' },
+    { value: 'مقفل', label: 'مقفل' },
     { value: 'بانتظار التنشيط', label: 'بانتظار التنشيط' }
   ];
 
@@ -147,62 +152,21 @@ export class Provider implements OnInit {
     return this.sortDirection === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
   }
 
-  getStatusBadgeClass(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'نشط':
-      case 'active':
-        return 'badge-success';
-      case 'معطل':
-      case 'suspended':
-        return 'badge-danger';
-      case 'بانتظار التنشيط':
-      case 'pending verification':
-        return 'badge-warning';
-      case 'غير نشط':
-      case 'inactive':
-        return 'badge-secondary';
-      default:
-        return 'badge-secondary';
-    }
+  // Provider status methods using the service
+  isProviderLocked(provider: ProviderManagementDto): boolean {
+    return this.providerService.isProviderLocked(provider);
   }
 
-  getStatusIcon(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'نشط':
-      case 'active':
-        return 'fas fa-check-circle text-success';
-      case 'معطل':
-      case 'suspended':
-        return 'fas fa-ban text-danger';
-      case 'بانتظار التنشيط':
-      case 'pending verification':
-        return 'fas fa-clock text-warning';
-      case 'غير نشط':
-      case 'inactive':
-        return 'fas fa-times-circle text-secondary';
-      default:
-        return 'fas fa-question-circle text-secondary';
-    }
+  getProviderStatusText(provider: ProviderManagementDto): string {
+    return this.providerService.getProviderStatus(provider);
   }
 
-  formatDate(date: Date | string): string {
-    if (!date) return '-';
-    const d = new Date(date);
-    return d.toLocaleDateString('ar-EG', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+  getProviderStatusBadgeClass(provider: ProviderManagementDto): string {
+    return this.providerService.getStatusBadgeClass(provider);
   }
 
-  openLockModal(provider: ProviderManagementDto): void {
-    this.selectedProvider = provider;
-    this.lockReason = '';
-    this.lockUntilDate = '';
-    
-    if (this.lockModal) {
-      this.lockModal.show();
-    }
+  getProviderStatusIcon(provider: ProviderManagementDto): string {
+    return this.providerService.getStatusIcon(provider);
   }
 
   closeLockModal(): void {
@@ -214,38 +178,52 @@ export class Provider implements OnInit {
     this.lockUntilDate = '';
   }
 
-  async toggleProviderLock(): Promise<void> {
-    if (!this.selectedProvider) return;
-
-    this.loading = true;
+  async lockProvider(provider: ProviderManagementDto): Promise<void> {
+   this.setActionLoading(provider.tenantId, false);
     
     try {
-      const isCurrentlyLocked = this.isProviderLocked(this.selectedProvider);
-      
-      const request: LockAccountRequestDto = {
-        lockUntil: isCurrentlyLocked ? null : (this.lockUntilDate ? new Date(this.lockUntilDate) : undefined),
-        reason: this.lockReason || undefined
-      };
-
-      const success = await this.providerService.lockProviderAccount(
-        this.selectedProvider.tenantId,
-        request
-      ).toPromise();
+      const success = await this.providerService.unlockProvider(provider.tenantId).toPromise();
 
       if (success) {
-        this.closeLockModal();
         await this.loadProviders();
         await this.loadStatistics();
+        this.showSuccessMessage('تم إلغاء قفل الحساب بنجاح');
+      } else {
+        this.error = 'فشل في إلغاء قفل الحساب';
       }
     } catch (error) {
-      console.error('Error toggling provider lock:', error);
-      this.error = 'حدث خطأ في تحديث حالة المزود';
+      console.error('Error unlocking provider:', error);
+      this.error = 'حدث خطأ في إلغاء قفل الحساب';
     } finally {
-      this.loading = false;
+      this.setActionLoading(provider.tenantId, false);
+    }
+  }
+  
+
+  async unlockProvider(provider: ProviderManagementDto): Promise<void> {
+    this.setActionLoading(provider.tenantId, true);
+    
+    try {
+      const success = await this.providerService.unlockProvider(provider.tenantId).toPromise();
+
+      if (success) {
+        await this.loadProviders();
+        await this.loadStatistics();
+        this.showSuccessMessage('تم إلغاء قفل الحساب بنجاح');
+      } else {
+        this.error = 'فشل في إلغاء قفل الحساب';
+      }
+    } catch (error) {
+      console.error('Error unlocking provider:', error);
+      this.error = 'حدث خطأ في إلغاء قفل الحساب';
+    } finally {
+      this.setActionLoading(provider.tenantId, false);
     }
   }
 
   async toggleVerification(provider: ProviderManagementDto): Promise<void> {
+    this.setActionLoading(provider.tenantId, true);
+    
     try {
       const updateRequest = {
         isEmailVerified: !provider.isEmailVerified,
@@ -258,13 +236,39 @@ export class Provider implements OnInit {
       ).toPromise();
 
       if (success) {
-        this.loadProviders();
-        this.loadStatistics();
+        await this.loadProviders();
+        await this.loadStatistics();
+        const action = updateRequest.isEmailVerified ? 'تفعيل' : 'إلغاء تفعيل';
+        this.showSuccessMessage(`تم ${action} الحساب بنجاح`);
+      } else {
+        this.error = 'فشل في تحديث حالة التفعيل';
       }
     } catch (error) {
       console.error('Error updating verification:', error);
       this.error = 'حدث خطأ في تحديث حالة التفعيل';
+    } finally {
+      this.setActionLoading(provider.tenantId, false);
     }
+  }
+
+  viewProviderDetails(provider: ProviderManagementDto): void {
+    // Implement view details functionality
+    console.log('View provider details:', provider);
+    // You can open a modal or navigate to a details page
+  }
+
+  // Utility methods
+  setActionLoading(tenantId: string, loading: boolean): void {
+    this.actionLoading[tenantId] = loading;
+  }
+
+  showSuccessMessage(message: string): void {
+    // You can implement a toast notification service here
+    console.log('Success:', message);
+    // For now, we'll use a simple timeout to clear any existing errors
+    setTimeout(() => {
+      this.error = null;
+    }, 3000);
   }
 
   clearFilters(): void {
@@ -273,6 +277,22 @@ export class Provider implements OnInit {
     this.selectedVerification = '';
     this.currentPage = 1;
     this.loadProviders();
+  }
+
+  formatDate(date: Date | string): string {
+    if (!date) return '-';
+    const d = new Date(date);
+    return d.toLocaleDateString('ar-EG', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
+  getMinDateTime(): string {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
   }
 
   getPaginationArray(): number[] {
@@ -307,15 +327,49 @@ export class Provider implements OnInit {
     return item.tenantId;
   }
 
-  isProviderLocked(provider: ProviderManagementDto | null): boolean {
-    if (!provider?.lockoutEnd) {
-      return false;
+  // Legacy methods for backwards compatibility
+  getStatusBadgeClass(status: string): string {
+    switch (status.toLowerCase()) {
+      case 'نشط':
+      case 'active':
+        return 'badge-success';
+      case 'معطل':
+      case 'suspended':
+        return 'badge-danger';
+      case 'مقفل':
+      case 'locked':
+        return 'badge-danger';
+      case 'بانتظار التنشيط':
+      case 'pending verification':
+        return 'badge-warning';
+      case 'غير نشط':
+      case 'inactive':
+        return 'badge-secondary';
+      default:
+        return 'badge-secondary';
     }
-    
-    const lockoutDate = new Date(provider.lockoutEnd);
-    const now = new Date();
-    
-    return lockoutDate > now;
+  }
+
+  getStatusIcon(status: string): string {
+    switch (status.toLowerCase()) {
+      case 'نشط':
+      case 'active':
+        return 'fas fa-check-circle text-success';
+      case 'معطل':
+      case 'suspended':
+        return 'fas fa-ban text-danger';
+      case 'مقفل':
+      case 'locked':
+        return 'fas fa-lock text-danger';
+      case 'بانتظار التنشيط':
+      case 'pending verification':
+        return 'fas fa-clock text-warning';
+      case 'غير نشط':
+      case 'inactive':
+        return 'fas fa-times-circle text-secondary';
+      default:
+        return 'fas fa-question-circle text-secondary';
+    }
   }
 
   // Additional methods for the new design
@@ -330,6 +384,8 @@ export class Provider implements OnInit {
         return 'نشط';
       case 'suspended':
         return 'معطل';
+      case 'locked':
+        return 'مقفل';
       case 'pending verification':
         return 'بانتظار التنشيط';
       case 'inactive':
