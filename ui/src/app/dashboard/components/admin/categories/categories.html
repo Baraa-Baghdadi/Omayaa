@@ -1,1 +1,318 @@
-<p>categories works!</p>
+<!-- Modern Categories Management Component -->
+<div class="modern-provider-management" dir="rtl" lang="ar">
+  <!-- Hero Header Section -->
+  <div class="hero-section">
+    <div class="hero-content">
+      <div class="hero-icon">
+        <i class="fas fa-tags"></i>
+      </div>
+      <div class="hero-text">
+        <h1 class="hero-title main-color">إدارة الأصناف</h1>
+        <p class="hero-subtitle">
+          لوحة تحكم ذكية ومتقدمة لإدارة جميع أصناف المنتجات
+        </p>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <button 
+        class="btn btn-primary modern-add-btn"
+        (click)="openCreateCategoryModal()"
+        type="button"
+      >
+        <i class="fas fa-plus me-2"></i>
+        إضافة صنف جديد
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-section" *ngIf="statistics">
+    <div class="row g-3">
+      <div class="col-lg-3 col-md-6">
+        <div class="stat-card total">
+          <div class="stat-value">{{ statistics.totalCategories }}</div>
+          <div class="stat-label">إجمالي الأصناف</div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="stat-card active">
+          <div class="stat-value">{{ statistics.categoriesWithProducts }}</div>
+          <div class="stat-label">أصناف تحتوي منتجات</div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="stat-card pending">
+          <div class="stat-value">{{ statistics.emptyCategories }}</div>
+          <div class="stat-label">أصناف فارغة</div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="stat-card new">
+          <div class="stat-value">{{ statistics.averageProductsPerCategory | number:'1.1-1' }}</div>
+          <div class="stat-label">متوسط المنتجات/صنف</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <button 
+          class="btn btn-outline-warning filter-toggle"
+          (click)="showFilters = !showFilters"
+          type="button"
+        >
+          <i class="fas fa-filter me-2"></i>
+          {{ showFilters ? 'إخفاء الفلاتر' : 'إظهار الفلاتر' }}
+          <i class="fas" [ngClass]="showFilters ? 'fa-chevron-up' : 'fa-chevron-down'" style="margin-right: 8px;"></i>
+        </button>
+      </div>
+      
+      <div class="col-md-9">
+        <div class="search-filters-container">
+          <span class="search-label">البحث والفلاتر</span>
+          <i class="fas fa-filter filter-icon"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expandable Filters -->
+    <div class="filters-content" [ngClass]="{'show': showFilters}">
+      <div class="row g-3 mt-3">
+        <div class="col-lg-6 col-md-8">
+          <div class="form-group">
+            <input 
+              type="text" 
+              class="form-control modern-input"
+              [(ngModel)]="searchTerm"
+              (ngModelChange)="onSearchChange()"
+              placeholder="البحث بالاسم..."
+            >
+          </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4">
+          <button 
+            class="btn btn-outline-secondary clear-btn"
+            (click)="clearFilters()"
+            type="button"
+          >
+            مسح الفلاتر
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div class="alert alert-danger modern-alert" *ngIf="error">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    {{ error }}
+    <button 
+      type="button" 
+      class="btn-close" 
+      (click)="error = null"
+      aria-label="إغلاق"
+    ></button>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-section" *ngIf="loading">
+    <div class="spinner-border text-warning" role="status"></div>
+    <p class="loading-text">جاري التحميل...</p>
+  </div>
+
+  <!-- Table Section -->
+  <div class="table-section" *ngIf="!loading">
+    <div class="table-header">
+      <div class="table-title">
+        <i class="fas fa-th table-icon"></i>
+        <span class="title-text">إدارة الأصناف</span>
+      </div>
+      <div class="table-controls">
+        <div class="show-entries">
+          <span>{{ categories.length }}</span>
+          <span class="control-label">من {{ totalCount }} صنف</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="table modern-table">
+        <thead>
+          <tr>
+            <th class="text-center">#</th>
+            <th>
+              <button 
+                class="sort-btn"
+                (click)="onSort('Name')"
+              >
+                اسم الصنف
+                <i class="sort-icon" [ngClass]="getSortIcon('Name')"></i>
+              </button>
+            </th>
+            <th class="text-center">
+              <button 
+                class="sort-btn"
+                (click)="onSort('ProductCount')"
+              >
+                عدد المنتجات
+                <i class="sort-icon" [ngClass]="getSortIcon('ProductCount')"></i>
+              </button>
+            </th>
+            <th class="text-center">حالة الصنف</th>
+            <th class="text-center">تاريخ الإنشاء</th>
+            <th class="text-center">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let category of categories; trackBy: trackByFn; let i = index" class="table-row">
+            <td class="text-center">
+              <div class="row-number">
+                {{ (currentPage - 1) * pageSize + i + 1 }}
+              </div>
+            </td>
+            <td>
+              <div class="category-name">
+                <i class="fas fa-tag me-2 text-warning"></i>
+                {{ category.name }}
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="product-count-badge">
+                <span class="badge bg-info">{{ category.productCount }}</span>
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="category-status">
+                <span class="trigger-badge" 
+                      [ngClass]="category.productCount > 0 ? 'badge-success' : 'badge-warning'">
+                  <i [class]="category.productCount > 0 ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'" 
+                     style="margin-left: 5px;"></i>
+                  {{ category.productCount > 0 ? 'يحتوي منتجات' : 'فارغ' }}
+                </span>
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="forecast-date">
+                {{ formatDate(category.createdAt) }}
+              </div>
+            </td>
+            <td class="text-center"> 
+              <div ngbDropdown container="body" class="d-inline-block">
+                <button
+                  class="btn btn-outline-warning filter-toggle btn-sm dropdown-toggle rounded"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  ngbDropdownToggle
+                  [disabled]="actionLoading[category.id]"
+                >
+                  <span *ngIf="actionLoading[category.id]" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                  <i *ngIf="!actionLoading[category.id]" class="fa fa-cog ms-2"></i>
+                  الإجراءات
+                </button>
+                <div ngbDropdownMenu>
+                  <button 
+                    ngbDropdownItem 
+                    (click)="openEditCategoryModal(category)"
+                    class="text-primary"
+                  >
+                    <i class="fas fa-edit me-2"></i>
+                    تعديل الصنف
+                  </button>
+                  
+                  <div class="dropdown-divider"></div>
+                  
+                  <button 
+                    ngbDropdownItem 
+                    (click)="openDeleteCategoryModal(category)"
+                    class="text-danger"
+                    [disabled]="category.productCount > 0"
+                    [title]="category.productCount > 0 ? 'لا يمكن حذف صنف يحتوي على منتجات' : ''"
+                  >
+                    <i class="fas fa-trash me-2"></i>
+                    حذف الصنف
+                    <small *ngIf="category.productCount > 0" class="text-muted d-block">
+                      (يحتوي {{ category.productCount }} منتج)
+                    </small>
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="categories.length === 0 && !loading">
+        <i class="fas fa-tags empty-icon"></i>
+        <h5>لا توجد أصناف</h5>
+        <p>لم يتم العثور على أصناف بالمعايير المحددة</p>
+        <button 
+          class="btn btn-primary mt-3"
+          (click)="openCreateCategoryModal()"
+        >
+          <i class="fas fa-plus me-2"></i>
+          إضافة أول صنف
+        </button>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-section" *ngIf="totalPages > 1">
+      <nav aria-label="صفحات الأصناف">
+        <ul class="pagination modern-pagination">
+          <li class="page-item" [ngClass]="{'disabled': currentPage === 1}">
+            <button 
+              class="page-link"
+              (click)="onPageChange(currentPage - 1)"
+              [disabled]="currentPage === 1"
+            >
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </li>
+          
+          <li 
+            class="page-item"
+            *ngFor="let page of getPaginationArray();"
+            [ngClass]="{'active': page === currentPage, 'disabled': page === -1}"
+          >
+            <button 
+              class="page-link"
+              (click)="page !== -1 ? onPageChange(page) : null"
+              [disabled]="page === -1"
+            >
+              {{ page === -1 ? '...' : page }}
+            </button>
+          </li>
+          
+          <li class="page-item" [ngClass]="{'disabled': currentPage === totalPages}">
+            <button 
+              class="page-link"
+              (click)="onPageChange(currentPage + 1)"
+              [disabled]="currentPage === totalPages"
+            >
+              <i class="fas fa-chevron-left"></i>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<!-- Shared Modal Component -->
+<app-shared-modal-component
+  #modalComponent
+  [config]="modalConfig || {title: '', fields: []}"
+  [form]="modalForm!"
+  [loading]="modalLoading"
+  [saving]="modalSaving"
+  [error]="modalError"
+  (modalResult)="onModalResult($event)"
+  (saveClicked)="onModalSave($event)"
+  (cancelClicked)="onModalCancel()"
+  (closeClicked)="onModalClose()"
+></app-shared-modal-component>
