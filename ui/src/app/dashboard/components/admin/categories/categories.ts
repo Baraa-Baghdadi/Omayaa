@@ -7,6 +7,7 @@ import { CategoryManagementService, CategoryDto, GetCategoriesRequestDto, Catego
 import { SharedModalComponent, ModalConfig, ModalResult } from '../../../../shared/components/shared-modal-component/shared-modal-component';
 import { SharedModalService } from '../../../../shared/services/shared-modal-service';
 import { ErrorPopup } from '../../../../shared/services/error-popup';
+import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-categories',
@@ -16,7 +17,16 @@ import { ErrorPopup } from '../../../../shared/services/error-popup';
   styleUrl: './categories.scss'
 })
 export class Categories {
-   @ViewChild(SharedModalComponent) modalComponent!: SharedModalComponent;
+    @ViewChild(SharedModalComponent) modalComponent!: SharedModalComponent;
+
+  // Subject for managing subscriptions
+  private destroy$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
+
+  // Flag to prevent duplicate API calls
+  private isLoadingCategories = false;
+  private isLoadingStatistics = false;
+  private isProcessingModal = false; // إضافة flag جديد لمنع معالجة المودال المزدوجة
 
   // Expose Math for template
   Math = Math;
@@ -56,16 +66,50 @@ export class Categories {
     private errorPopup: ErrorPopup,
     private fb: FormBuilder
   ) {
-    // Initialize a default form to prevent null errors
     this.modalForm = this.fb.group({});
   }
 
   ngOnInit(): void {
-    this.loadCategories();
-    this.loadStatistics();
+    this.initializeSearchDebounce();
+    this.loadInitialData();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private initializeSearchDebounce(): void {
+    this.searchSubject
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((searchTerm:any) => {
+        this.searchTerm = searchTerm;
+        this.currentPage = 1;
+        this.loadCategories();
+      });
+  }
+
+  private async loadInitialData(): Promise<void> {
+    try {
+      await Promise.all([
+        this.loadCategories(),
+        this.loadStatistics()
+      ]);
+    } catch (error) {
+      console.error('Error loading initial data:', error);
+    }
   }
 
   async loadCategories(): Promise<void> {
+    if (this.isLoadingCategories) {
+      return;
+    }
+
+    this.isLoadingCategories = true;
     this.loading = true;
     this.error = null;
 
@@ -88,27 +132,36 @@ export class Categories {
         this.currentPage = response.pagination.currentPage;
       }
     } catch (error: any) {
+      console.error('Error loading categories:', error);
       this.error = 'حدث خطأ في تحميل البيانات';
     } finally {
       this.loading = false;
+      this.isLoadingCategories = false;
     }
   }
 
   async loadStatistics(): Promise<void> {
+    if (this.isLoadingStatistics) {
+      return;
+    }
+
+    this.isLoadingStatistics = true;
+
     try {
       this.statistics = await this.categoryService.getCategoryStatistics().toPromise() || null;
     } catch (error) {
       console.error('Error loading statistics:', error);
+    } finally {
+      this.isLoadingStatistics = false;
     }
   }
 
-  onSearchChange(): void {
-    this.currentPage = 1;
-    this.loadCategories();
+  onSearchChange(searchValue: string): void {
+    this.searchSubject.next(searchValue);
   }
 
   onPageChange(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
       this.currentPage = page;
       this.loadCategories();
     }
@@ -131,6 +184,8 @@ export class Categories {
 
   // Modal Methods
   openCreateCategoryModal(): void {
+    this.selectedCategory = null;
+    
     this.modalConfig = {
       title: 'إضافة صنف جديد',
       subtitle: 'قم بإدخال بيانات الصنف الجديد',
@@ -152,19 +207,12 @@ export class Categories {
       size: 'lg'
     };
 
-    // Create form manually
     this.modalForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]]
     });
 
-    this.modalError = null;
-    this.modalSaving = false;
-
-    setTimeout(() => {
-      if (this.modalComponent) {
-        this.modalComponent.show();
-      }
-    }, 100);
+    this.resetModal();
+    this.showModal();
   }
 
   openEditCategoryModal(category: CategoryDto): void {
@@ -191,19 +239,12 @@ export class Categories {
       size: 'lg'
     };
 
-    // Create form with existing data
     this.modalForm = this.fb.group({
       name: [category.name, [Validators.required, Validators.minLength(2), Validators.maxLength(100)]]
     });
 
-    this.modalError = null;
-    this.modalSaving = false;
-
-    setTimeout(() => {
-      if (this.modalComponent) {
-        this.modalComponent.show();
-      }
-    }, 100);
+    this.resetModal();
+    this.showModal();
   }
 
   openDeleteCategoryModal(category: CategoryDto): void {
@@ -227,14 +268,21 @@ export class Categories {
       size: 'lg'
     };
 
-    // Create form for confirmation
     this.modalForm = this.fb.group({
       confirmation: ['', [Validators.required]]
     });
 
+    this.resetModal();
+    this.showModal();
+  }
+
+  private resetModal(): void {
     this.modalError = null;
     this.modalSaving = false;
+    this.isProcessingModal = false; // إعادة تشغيل flag المعالجة
+  }
 
+  private showModal(): void {
     setTimeout(() => {
       if (this.modalComponent) {
         this.modalComponent.show();
@@ -242,7 +290,68 @@ export class Categories {
     }, 100);
   }
 
+  // **هنا الإصلاح الرئيسي: استخدام event handler واحد فقط**
+  
+  // إزالة onModalSave واستخدام onModalResult فقط
+  onModalResult(result: ModalResult): void {
+    if (result.action === 'save' && result.data && !this.isProcessingModal) {
+      this.isProcessingModal = true; // منع المعالجة المزدوجة
+      this.handleModalSave(result.data);
+    } else if (result.action === 'cancel' || result.action === 'close') {
+      this.onModalCancel();
+    }
+  }
+
+  // **إزالة هذه الدالة تماماً لأنها تسبب الاستدعاء المزدوج**
+  // onModalSave(data: any): void { ... }
+
+  private async handleModalSave(data: any): Promise<void> {
+    if (!this.modalConfig || this.modalSaving) return;
+
+    try {
+      if (this.modalConfig.title === 'إضافة صنف جديد') {
+        await this.createCategory({
+          name: data.name
+        });
+      } else if (this.modalConfig.title === 'تعديل الصنف' && this.selectedCategory) {
+        await this.updateCategory(this.selectedCategory.id, {
+          name: data.name
+        });
+      } else if (this.modalConfig.title === 'حذف الصنف' && this.selectedCategory) {
+        if (data.confirmation === 'حذف') {
+          await this.deleteCategory(this.selectedCategory.id);
+        } else {
+          this.modalError = 'يجب كتابة "حذف" للتأكيد';
+          this.isProcessingModal = false;
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Modal save error:', error);
+      this.isProcessingModal = false;
+    }
+  }
+
+  onModalCancel(): void {
+    this.hideModal();
+  }
+
+  onModalClose(): void {
+    this.hideModal();
+  }
+
+  private hideModal(): void {
+    if (this.modalComponent) {
+      this.modalComponent.hide();
+    }
+    this.selectedCategory = null;
+    this.resetModal();
+  }
+
+  // CRUD operations
   async createCategory(data: CreateCategoryDto): Promise<void> {
+    if (this.modalSaving) return;
+
     this.modalSaving = true;
     this.modalError = null;
 
@@ -250,31 +359,28 @@ export class Categories {
       const newCategory = await this.categoryService.createCategory(data).toPromise();
       
       if (newCategory) {
-        await this.loadCategories();
-        await this.loadStatistics();
-        if (this.modalComponent) {
-          this.modalComponent.hide();
-        }
+        // تحديث البيانات بعد الإضافة
+        await Promise.all([
+          this.loadCategories(),
+          this.loadStatistics()
+        ]);
+        
+        this.hideModal();
         this.errorPopup.showSuccess();
         this.showSuccessMessage('تم إضافة الصنف بنجاح');
       }
     } catch (error: any) {
       console.error('Error creating category:', error);
-      let errorMessage = 'حدث خطأ في إضافة الصنف';
-      
-      if (error.status === 409) {
-        errorMessage = 'اسم الصنف موجود مسبقاً';
-      } else if (error.error && typeof error.error === 'string') {
-        errorMessage = error.error;
-      }
-      
-      this.modalError = errorMessage;
+      this.modalError = this.getErrorMessage(error, 'حدث خطأ في إضافة الصنف');
     } finally {
       this.modalSaving = false;
+      this.isProcessingModal = false;
     }
   }
 
   async updateCategory(categoryId: string, data: UpdateCategoryDto): Promise<void> {
+    if (this.modalSaving) return;
+
     this.modalSaving = true;
     this.modalError = null;
 
@@ -282,44 +388,63 @@ export class Categories {
       const updatedCategory = await this.categoryService.updateCategory(categoryId, data).toPromise();
       
       if (updatedCategory) {
-        await this.loadCategories();
-        await this.loadStatistics();
-        if (this.modalComponent) {
-          this.modalComponent.hide();
-        }
+        // تحديث البيانات بعد التعديل
+        await Promise.all([
+          this.loadCategories(),
+          this.loadStatistics()
+        ]);
+        
+        this.hideModal();
         this.errorPopup.showSuccess();
         this.showSuccessMessage('تم تحديث الصنف بنجاح');
       }
     } catch (error: any) {
       console.error('Error updating category:', error);
-      let errorMessage = 'حدث خطأ في تحديث الصنف';
-      
-      if (error.status === 409) {
-        errorMessage = 'اسم الصنف موجود مسبقاً';
-      } else if (error.status === 404) {
-        errorMessage = 'الصنف غير موجود';
-      } else if (error.error && typeof error.error === 'string') {
-        errorMessage = error.error;
-      }
-      
-      this.modalError = errorMessage;
+      this.modalError = this.getErrorMessage(error, 'حدث خطأ في تحديث الصنف');
     } finally {
       this.modalSaving = false;
+      this.isProcessingModal = false;
     }
   }
 
-  deleteCategory(categoryId: string):any {
+  async deleteCategory(categoryId: string): Promise<void> {
+    if (this.modalSaving) return;
+
     this.modalSaving = true;
     this.modalError = null;
-     this.categoryService.deleteCategory(categoryId).subscribe((data:any) => {
-        this.loadCategories();
-        this.loadStatistics();
-        if (this.modalComponent) {
-          this.modalComponent.hide();
-        }
+
+    try {
+      await this.categoryService.deleteCategory(categoryId).toPromise();
+      
+      // تحديث البيانات بعد الحذف
+      await Promise.all([
+        this.loadCategories(),
+        this.loadStatistics()
+      ]);
+      
+      this.hideModal();
       this.errorPopup.showSuccess();
+      this.showSuccessMessage('تم حذف الصنف بنجاح');
+    } catch (error: any) {
+      console.error('Error deleting category:', error);
+      this.modalError = this.getErrorMessage(error, 'حدث خطأ في حذف الصنف');
+    } finally {
       this.modalSaving = false;
-    })
+      this.isProcessingModal = false;
+    }
+  }
+
+  private getErrorMessage(error: any, defaultMessage: string): string {
+    if (error.status === 409) {
+      return 'اسم الصنف موجود مسبقاً';
+    } else if (error.status === 404) {
+      return 'الصنف غير موجود';
+    } else if (error.status === 400) {
+      return 'بيانات غير صحيحة';
+    } else if (error.error && typeof error.error === 'string') {
+      return error.error;
+    }
+    return defaultMessage;
   }
 
   // Utility methods
@@ -337,7 +462,7 @@ export class Categories {
   clearFilters(): void {
     this.searchTerm = '';
     this.currentPage = 1;
-    this.loadCategories();
+    this.searchSubject.next('');
   }
 
   formatDate(date: Date | string): string {
@@ -384,41 +509,5 @@ export class Categories {
 
   toggleFilters(): void {
     this.showFilters = !this.showFilters;
-  }
-
-  // Modal event handlers
-  onModalSave(data: any): void {
-    if (!this.selectedCategory) {
-      // Creating new category
-      this.createCategory(data);
-    } else if (this.modalConfig?.saveButtonText === 'حذف الصنف') {
-      // Deleting category
-      if (data.confirmation === 'حذف') {
-        this.deleteCategory(this.selectedCategory.id);
-      } else {
-        this.modalError = 'يجب كتابة "حذف" للتأكيد';
-      }
-    } else {
-      // Updating category
-      this.updateCategory(this.selectedCategory.id, data);
-    }
-  }
-
-  onModalCancel(): void {
-    this.selectedCategory = null;
-    this.modalError = null;
-  }
-
-  onModalClose(): void {
-    this.selectedCategory = null;
-    this.modalError = null;
-  }
-
-  onModalResult(result: ModalResult): void {
-    if (result.action === 'save') {
-      this.onModalSave(result.data);
-    } else {
-      this.onModalCancel();
-    }
   }
 }

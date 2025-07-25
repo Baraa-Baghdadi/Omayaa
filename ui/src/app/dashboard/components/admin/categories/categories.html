@@ -87,7 +87,7 @@
               type="text" 
               class="form-control modern-input"
               [(ngModel)]="searchTerm"
-              (ngModelChange)="onSearchChange()"
+              (ngModelChange)="onSearchChange($event)"
               placeholder="البحث بالاسم..."
             >
           </div>
@@ -212,8 +212,8 @@
                     (click)="openEditCategoryModal(category)"
                     class="text-primary"
                   >
-                    <i class="fas fa-edit me-2"></i>
                     تعديل الصنف
+                   <i class="fas fa-edit me-2"></i>
                   </button>
                   
                   <div class="dropdown-divider"></div>
@@ -225,11 +225,11 @@
                     [disabled]="category.productCount > 0"
                     [title]="category.productCount > 0 ? 'لا يمكن حذف صنف يحتوي على منتجات' : ''"
                   >
-                    <i class="fas fa-trash me-2"></i>
                     حذف الصنف
-                    <small *ngIf="category.productCount > 0" class="text-muted d-block">
+                    <i class="fas fa-trash me-2"></i>
+                    <!-- <small *ngIf="category.productCount > 0" class="text-muted d-block">
                       (يحتوي {{ category.productCount }} منتج)
-                    </small>
+                    </small> -->
                   </button>
                 </div>
               </div>
@@ -305,7 +305,6 @@
   [saving]="modalSaving"
   [error]="modalError"
   (modalResult)="onModalResult($event)"
-  (saveClicked)="onModalSave($event)"
   (cancelClicked)="onModalCancel()"
   (closeClicked)="onModalClose()"
 ></app-shared-modal-component>
