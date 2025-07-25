@@ -167,6 +167,7 @@
                 <i class="sort-icon" [ngClass]="getSortIcon('CreationTime')"></i>
               </button>
             </th>
+            <th>الإجراءات</th>
           </tr>
         </thead>
         <tbody>
@@ -198,6 +199,23 @@
                 {{ formatDate(provider.creationTime) }}
               </div>
             </td>
+            <td> 
+            <div ngbDropdown container="body" class="d-inline-block">
+              <button
+                class="btn btn-outline-warning filter-toggle btn-sm dropdown-toggle rounded"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                ngbDropdownToggle
+              >
+                <i class="fa fa-cog ms-2"></i>الإجراءات
+              </button>
+              <div ngbDropdownMenu>
+                <button ngbDropdownItem>
+                  قفل الحساب
+                </button>
+              </div>
+            </div>
+          </td>
           </tr>
         </tbody>
       </table>

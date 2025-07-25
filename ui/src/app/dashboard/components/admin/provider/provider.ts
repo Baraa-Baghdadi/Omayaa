@@ -2,12 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { GetProvidersRequestDto, LockAccountRequestDto, ProviderManagementDto, ProviderManagementService, ProviderStatisticsDto } from '../../../services/provider-management-service';
 import { FormsModule } from '@angular/forms';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 // Declare Bootstrap for TypeScript
 declare var bootstrap: any;
 @Component({
   selector: 'app-provider',
   standalone:true,
-  imports: [CommonModule,NgClass,FormsModule],
+  imports: [CommonModule,NgClass,FormsModule,NgbDropdownModule],
   templateUrl: './provider.html',
   styleUrl: './provider.scss'
 })
