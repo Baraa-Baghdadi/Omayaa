@@ -168,6 +168,33 @@ export class ProviderManagementService {
   }
 
   /**
+   * Lock a provider account until specified date
+   * @param tenantId Tenant ID of the provider
+   * @param lockUntil Date to lock until
+   * @param reason Reason for locking
+   * @returns Observable of boolean
+   */
+  lockProvider(tenantId: string, lockUntil?: Date, reason?: string): Observable<boolean> {
+    const request: LockAccountRequestDto = {
+      lockUntil: lockUntil,
+      reason: reason
+    };
+    return this.lockProviderAccount(tenantId, request);
+  }
+
+  /**
+   * Unlock a provider account
+   * @param tenantId Tenant ID of the provider
+   * @returns Observable of boolean
+   */
+  unlockProvider(tenantId: string): Observable<boolean> {
+    const request: LockAccountRequestDto = {
+      lockUntil: null
+    };
+    return this.lockProviderAccount(tenantId, request);
+  }
+
+  /**
    * Get provider statistics for dashboard
    * @returns Observable of ProviderStatisticsDto
    */
@@ -178,18 +205,71 @@ export class ProviderManagementService {
   }
 
   /**
+   * Check if provider is currently locked
+   * @param provider Provider object
+   * @returns Boolean indicating if provider is locked
+   */
+  isProviderLocked(provider: ProviderManagementDto): boolean {
+    if (!provider.lockoutEnd) {
+      return false;
+    }
+    
+    const lockoutDate = new Date(provider.lockoutEnd);
+    const now = new Date();
+    
+    return lockoutDate > now;
+  }
+
+  /**
+   * Get provider status with lock information
+   * @param provider Provider object
+   * @returns Status string
+   */
+  getProviderStatus(provider: ProviderManagementDto): string {
+    if (this.isProviderLocked(provider)) {
+      return 'مقفل';
+    }
+
+    switch (provider.accountStatus.toLowerCase()) {
+      case 'نشط':
+      case 'active':
+        return 'نشط';
+      case 'بانتظار التنشيط':
+      case 'pending verification':
+        return 'بانتظار التنشيط';
+      case 'غير نشط':
+      case 'inactive':
+        return 'غير نشط';
+      case 'معطل':
+      case 'suspended':
+        return 'معطل';
+      default:
+        return provider.accountStatus;
+    }
+  }
+
+  /**
    * Helper method to get account status badge class
-   * @param status Account status
+   * @param provider Provider object
    * @returns CSS class for status badge
    */
-  getStatusBadgeClass(status: string): string {
-    switch (status.toLowerCase()) {
+  getStatusBadgeClass(provider: ProviderManagementDto): string {
+    if (this.isProviderLocked(provider)) {
+      return 'badge-danger';
+    }
+
+    const status = provider.accountStatus.toLowerCase();
+    switch (status) {
+      case 'نشط':
       case 'active':
         return 'badge-success';
+      case 'معطل':
       case 'suspended':
         return 'badge-danger';
+      case 'بانتظار التنشيط':
       case 'pending verification':
         return 'badge-warning';
+      case 'غير نشط':
       case 'inactive':
         return 'badge-secondary';
       default:
@@ -199,17 +279,26 @@ export class ProviderManagementService {
 
   /**
    * Helper method to get account status icon
-   * @param status Account status
+   * @param provider Provider object
    * @returns FontAwesome icon class
    */
-  getStatusIcon(status: string): string {
-    switch (status.toLowerCase()) {
+  getStatusIcon(provider: ProviderManagementDto): string {
+    if (this.isProviderLocked(provider)) {
+      return 'fas fa-lock';
+    }
+
+    const status = provider.accountStatus.toLowerCase();
+    switch (status) {
+      case 'نشط':
       case 'active':
         return 'fas fa-check-circle';
+      case 'معطل':
       case 'suspended':
         return 'fas fa-ban';
+      case 'بانتظار التنشيط':
       case 'pending verification':
         return 'fas fa-clock';
+      case 'غير نشط':
       case 'inactive':
         return 'fas fa-times-circle';
       default:
