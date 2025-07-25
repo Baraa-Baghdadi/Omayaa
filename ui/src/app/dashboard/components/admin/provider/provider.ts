@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { GetProvidersRequestDto, LockAccountRequestDto, ProviderManagementDto, ProviderManagementService, ProviderStatisticsDto } from '../../../services/provider-management-service';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +12,7 @@ declare var bootstrap: any;
   styleUrl: './provider.scss'
 })
 
-export class Provider {
+export class Provider implements OnInit {
    // Expose Math for template
   Math = Math;
   
