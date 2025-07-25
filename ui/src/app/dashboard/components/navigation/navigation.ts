@@ -12,13 +12,10 @@ import { Auth } from '../../../shared/services/auth';
 })
 export class Navigation implements OnInit {
   darkMode = false;
-  sidebarExpanded = true;
+  sidebarExpanded = false;
   currentUser: any = null;
   userSubscription: Subscription = new Subscription();
 
-  /**
-   *
-   */
   constructor(private authService:Auth) {
   }
   
