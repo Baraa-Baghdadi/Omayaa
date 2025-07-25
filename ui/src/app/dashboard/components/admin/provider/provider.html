@@ -134,16 +134,16 @@
   <!-- Table Section -->
   <div class="table-section" *ngIf="!loading">
     <div class="table-header">
-      <div class="table-controls">
-        <div class="show-entries">
-          <span>{{ pageSize }}</span>
-          <span class="control-label">عرض</span>
-        </div>
-      </div>
+        <!-- <div class="table-controls">
+          <div class="show-entries">
+            <span>{{ pageSize }}</span>
+            <span class="control-label">عرض</span>
+          </div>
+        </div> -->
       
       <div class="table-title">
-        <span class="title-text">إدارة المزودين</span>
         <i class="fas fa-th table-icon"></i>
+        <span class="title-text">إدارة المزودين</span>
       </div>
     </div>
 
@@ -151,6 +151,7 @@
       <table class="table modern-table">
         <thead>
           <tr>
+            <th class="text-center">#</th>
             <th>
               <button 
                 class="sort-btn"
@@ -160,58 +161,44 @@
                 <i class="sort-icon" [ngClass]="getSortIcon('ProviderName')"></i>
               </button>
             </th>
-            <th>النوع</th>
             <th>المعلومات</th>
             <th class="text-center">
               <button 
                 class="sort-btn"
                 (click)="onSort('CreationTime')"
               >
-                تاريخ الانتهاء المتوقع
+                  تاريخ التسجيل
                 <i class="sort-icon" [ngClass]="getSortIcon('CreationTime')"></i>
               </button>
             </th>
-            <th class="text-center">
-              تاريخ التسجيل
-            </th>
-            <th class="text-center">#</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let provider of providers; trackBy: trackByFn; let i = index" class="table-row">
-            <td>
+            <td class="text-center">
+              <div class="row-number">
+                {{ (currentPage - 1) * pageSize + i + 1 }}
+              </div>
+            </td>
+            <!-- <td>
               <div class="provider-trigger">
                 <span class="trigger-badge" [ngClass]="getStatusBadgeClass(provider.accountStatus)">
                   {{ provider.accountStatus }}
                 </span>
               </div>
-            </td>
+            </td> -->
             <td>
-              <div class="provider-type">
-                <span class="type-badge date-type">
-                  مزود
-                </span>
-              </div>
+              <div class="provider-name">{{ provider.providerName }}</div>
             </td>
             <td>
               <div class="provider-input">
-                <div class="provider-name">{{ provider.providerName }}</div>
+                <div class="provider-contact">{{ provider.telephone }}</div>
                 <div class="provider-contact">{{ provider.mobile }}</div>
               </div>
             </td>
-            <td class="text-center">
-              <div class="forecast-date">
+            <td>
+              <div class="forecast-date me-2">
                 {{ formatDate(provider.creationTime) }}
-              </div>
-            </td>
-            <td class="text-center">
-              <div class="forecast-date">
-                {{ formatDate(provider.creationTime) }}
-              </div>
-            </td>
-            <td class="text-center">
-              <div class="row-number">
-                {{ (currentPage - 1) * pageSize + i + 1 }}
               </div>
             </td>
           </tr>
