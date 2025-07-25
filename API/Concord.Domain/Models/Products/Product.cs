@@ -1,6 +1,5 @@
 ﻿using Concord.Domain.Models.Categories;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Concord.Domain.Models.Products
 {
@@ -10,12 +9,10 @@ namespace Concord.Domain.Models.Products
         [Required, MaxLength(150)]
         public string Name { get; set; }
 
-        [Column(TypeName = "decimal(10,2)")]
-        public decimal Price { get; set; }
-
-        public int Quantity { get; set; }
-
-        [Url]
+        public int Price { get; set; }
+        
+        // for make offer on this product
+        public decimal? NewPrice { get; set; }
         public string ImageUrl { get; set; }
 
         public Guid CategoryId { get; set; }
