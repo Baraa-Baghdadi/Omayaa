@@ -4,91 +4,11 @@ body {
   overflow-x: hidden !important;
 }
 body{
-  // background-color: #222222 !important;
+  background-color: #fafafafa !important;
 }
 .c-pointer{
   cursor: pointer !important;
 }
 .main-color{
   color: #d4af37 !important;
-}
-// Hero for each dashboard
-/* Hero Header */
-.hero-header {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius);
-  margin-bottom: 2rem;
-  padding: 2rem;
-  box-shadow: var(--shadow-soft);
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-bg-animation {
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
-  background-size: 50px 50px;
-  animation: moveBackground 20s linear infinite;
-}
-
-@keyframes moveBackground {
-  0% { transform: translate(0, 0); }
-  100% { transform: translate(50px, 50px); }
-}
-
-.hero-content {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-}
-
-.hero-icon {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  color: white;
-  border: 2px solid rgba(255,255,255,0.3);
-}
-
-.icon-pulse {
-  position: absolute;
-  inset: -20px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(1.2); opacity: 0; }
-}
-
-.hero-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: white;
-  margin-bottom: 0.5rem;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.hero-subtitle {
-  color: rgba(255,255,255,0.9);
-  font-size: 1.1rem;
-  margin: 0;
-}
-
-// end 
+} 

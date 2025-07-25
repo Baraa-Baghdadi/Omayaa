@@ -13,7 +13,7 @@ declare var bootstrap: any;
 })
 
 export class Provider {
-// Expose Math for template
+   // Expose Math for template
   Math = Math;
   
   // Data properties
@@ -27,7 +27,7 @@ export class Provider {
   selectedStatus = '';
   selectedVerification = '';
   currentPage = 1;
-  pageSize = 10;
+  pageSize = 25; // Updated to match the design (25 show)
   totalPages = 0;
   totalCount = 0;
   sortBy = 'CreationTime';
@@ -36,7 +36,7 @@ export class Provider {
   // UI properties
   showFilters = false;
   selectedProvider: ProviderManagementDto | null = null;
-  lockModal: any; // Bootstrap modal instance
+  lockModal: any;
   lockReason = '';
   lockUntilDate = '';
 
@@ -64,7 +64,6 @@ export class Provider {
   }
 
   private initializeModal(): void {
-    // Initialize Bootstrap modal after view init
     setTimeout(() => {
       const modalElement = document.getElementById('lockProviderModal');
       if (modalElement) {
@@ -191,10 +190,7 @@ export class Provider {
     return d.toLocaleDateString('ar-EG', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
+      day: 'numeric'
     });
   }
 
@@ -319,5 +315,37 @@ export class Provider {
     const now = new Date();
     
     return lockoutDate > now;
+  }
+
+  // Additional methods for the new design
+  toggleFilters(): void {
+    this.showFilters = !this.showFilters;
+  }
+
+  // Method to get provider status in Arabic
+  getProviderStatusArabic(status: string): string {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'نشط';
+      case 'suspended':
+        return 'معطل';
+      case 'pending verification':
+        return 'بانتظار التنشيط';
+      case 'inactive':
+        return 'غير نشط';
+      default:
+        return status;
+    }
+  }
+
+  // Method to get short date format for the table
+  getShortDate(date: Date | string): string {
+    if (!date) return '-';
+    const d = new Date(date);
+    return d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric'
+    });
   }
 }
