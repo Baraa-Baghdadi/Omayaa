@@ -555,3 +555,24 @@
     }
   }
 }
+ .sort-btn {
+              background: none;
+              border: none;
+              color: inherit;
+              font-weight: inherit;
+              font-size: inherit;
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              cursor: pointer;
+              transition: color 0.3s ease;
+              
+              &:hover {
+                color: #FFCC02;
+              }
+              
+              .sort-icon {
+                font-size: 0.8rem;
+                opacity: 0.7;
+              }
+            }

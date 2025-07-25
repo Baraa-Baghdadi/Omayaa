@@ -47,7 +47,7 @@
     .form-control, .form-select {
       border: 1px solid rgba(212, 175, 55, 0.3);
       border-radius: 8px;
-      color: #ffffff;
+      color: black;
       padding: 0.6rem 1rem;
       transition: all 0.3s ease;
     }
@@ -55,7 +55,7 @@
     .form-control:focus, .form-select:focus {
       border-color: #d4af37;
       box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25);
-      color: #ffffff;
+      color: black;
     }
 
     .form-control::placeholder {
