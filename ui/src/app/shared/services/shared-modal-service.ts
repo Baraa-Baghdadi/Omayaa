@@ -7,7 +7,7 @@ import { ModalConfig, ModalField, ModalResult } from '../components/shared-modal
   providedIn: 'root'
 })
 export class SharedModalService {
-   private configSubject = new BehaviorSubject<ModalConfig | null>(null);
+  private configSubject = new BehaviorSubject<ModalConfig | null>(null);
   private formSubject = new BehaviorSubject<FormGroup | null>(null);
   private loadingSubject = new BehaviorSubject<boolean>(false);
   private savingSubject = new BehaviorSubject<boolean>(false);
@@ -235,7 +235,7 @@ export class SharedModalService {
   /**
    * Helper method to create text field
    */
-  static createTextField(
+  public static createTextField(
     key: string,
     label: string,
     options?: Partial<ModalField>
