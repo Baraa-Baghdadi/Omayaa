@@ -306,6 +306,32 @@
         }
       }
     }
+     .table-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      
+      .show-entries {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        
+        span:first-child {
+          background: #FFCC02;
+          color: white;
+          padding: 0.25rem 0.75rem;
+          border-radius: 6px;
+          font-weight: 600;
+          min-width: 40px;
+          text-align: center;
+        }
+        
+        .control-label {
+          color: #666;
+          font-weight: 500;
+        }
+      }
+    }
     
     .table-container {
       overflow-x: auto;
