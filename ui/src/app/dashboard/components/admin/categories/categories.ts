@@ -16,7 +16,8 @@ import { ErrorPopup } from '../../../../shared/services/error-popup';
   styleUrl: './categories.scss'
 })
 export class Categories {
-  @ViewChild(SharedModalComponent) modalComponent!: SharedModalComponent;
+   @ViewChild(SharedModalComponent) modalComponent!: SharedModalComponent;
+
   // Expose Math for template
   Math = Math;
   
@@ -29,7 +30,7 @@ export class Categories {
   // Filter and pagination properties
   searchTerm = '';
   currentPage = 1;
-  pageSize = 1;
+  pageSize = 10;
   totalPages = 0;
   totalCount = 0;
   sortBy = 'Name';
@@ -88,7 +89,6 @@ export class Categories {
       }
     } catch (error: any) {
       this.error = 'حدث خطأ في تحميل البيانات';
-      console.error('Error loading categories:', error);
     } finally {
       this.loading = false;
     }
@@ -308,38 +308,18 @@ export class Categories {
     }
   }
 
-  async deleteCategory(categoryId: string): Promise<void> {
+  deleteCategory(categoryId: string):any {
     this.modalSaving = true;
     this.modalError = null;
-
-    try {
-      const success = await this.categoryService.deleteCategory(categoryId).toPromise();
-      
-      if (success) {
-        await this.loadCategories();
-        await this.loadStatistics();
+     this.categoryService.deleteCategory(categoryId).subscribe((data:any) => {
+        this.loadCategories();
+        this.loadStatistics();
         if (this.modalComponent) {
           this.modalComponent.hide();
         }
-        this.errorPopup.showSuccess();
-        this.showSuccessMessage('تم حذف الصنف بنجاح');
-      }
-    } catch (error: any) {
-      console.error('Error deleting category:', error);
-      let errorMessage = 'حدث خطأ في حذف الصنف';
-      
-      if (error.status === 400 && error.error && error.error.includes('منتجات')) {
-        errorMessage = 'لا يمكن حذف الصنف لأنه يحتوي على منتجات';
-      } else if (error.status === 404) {
-        errorMessage = 'الصنف غير موجود';
-      } else if (error.error && typeof error.error === 'string') {
-        errorMessage = error.error;
-      }
-      
-      this.modalError = errorMessage;
-    } finally {
+      this.errorPopup.showSuccess();
       this.modalSaving = false;
-    }
+    })
   }
 
   // Utility methods
@@ -441,25 +421,4 @@ export class Categories {
       this.onModalCancel();
     }
   }
-
-  // Remove the dynamic modal properties since we're managing them directly
-  // get currentModalConfig() {
-  //   return this.modalService.config$;
-  // }
-
-  // get currentModalForm() {
-  //   return this.modalService.form$;
-  // }
-
-  // get currentModalLoading() {
-  //   return this.modalService.loading$;
-  // }
-
-  // get currentModalSaving() {
-  //   return this.modalService.saving$;
-  // }
-
-  // get currentModalError() {
-  //   return this.modalService.error$;
-  // }
 }
