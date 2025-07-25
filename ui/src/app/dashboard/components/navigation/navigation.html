@@ -2,7 +2,7 @@
   <!-- Sidebar (Left) -->
   <nav 
     [class.expanded]="sidebarExpanded" 
-    [ngStyle]="{ width: sidebarExpanded ? '280px' : '80px' }"
+    [ngStyle]="{ width: sidebarExpanded ? '260px' : '80px' }"
     class="sidebar bg-dark text-white d-flex flex-column align-items-center"
   >
     <!-- Logo -->
@@ -11,14 +11,14 @@
     </div>
 
     <!-- Nav Items -->
-    <ul class="nav flex-column w-100 px-2" dir="rtl">
-      <!-- <li class="nav-item c-pointer">
-        <a href="/app/dashboard" onclick="window.top.location.href='/app/dashboard';" class="nav-link d-flex align-items-center text-light px-3 py-2">
+    <ul class="nav flex-column w-100 px-2">
+      <li *ngIf="currentUser?.role === 'Admin'" class="nav-item c-pointer mb-1">
+        <a class="nav-link d-flex align-items-center text-light px-3 py-2">
           <i class="bi bi-speedometer2 fs-4 ms-2"></i>
-          <span *ngIf="sidebarExpanded" class="ms-3">لوحة التحكم</span>
+          <span *ngIf="sidebarExpanded" class="ms-5">لوحة التحكم</span>
         </a>
-      </li> -->
-      <li *ngIf="currentUser?.role === 'Admin'" class="nav-item c-pointer">
+      </li>
+      <li *ngIf="currentUser?.role === 'Admin'" class="nav-item c-pointer mb-3">
         <a href="/app/Providers" onclick="window.top.location.href='/app/Providers';" class="nav-link d-flex align-items-center text-light  px-3 py-2">
            <i class="fas fa-users-gear fs-5 ms-2"></i>
           <span *ngIf="sidebarExpanded" class="ms-5">المزودين</span>
