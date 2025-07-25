@@ -1,6 +1,5 @@
 ﻿using Concord.Domain.Models.Categories;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Concord.Domain.Models.Products
 {
