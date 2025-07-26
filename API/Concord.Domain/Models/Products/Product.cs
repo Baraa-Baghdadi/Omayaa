@@ -15,7 +15,7 @@ namespace Concord.Domain.Models.Products
 
         // For make offer on this product
         [Range(0, double.MaxValue, ErrorMessage = "New price must be greater than or equal to 0")]
-        public decimal? NewPrice { get; set; }
+        public int? NewPrice { get; set; }
 
         [MaxLength(500)]
         public string ImageUrl { get; set; }
@@ -25,7 +25,7 @@ namespace Concord.Domain.Models.Products
         [Required]
         public Guid CategoryId { get; set; }
         public Category Category { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     }
 }
