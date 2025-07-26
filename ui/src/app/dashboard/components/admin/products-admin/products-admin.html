@@ -1,0 +1,364 @@
+<!-- Modern Products Management Component -->
+<div class="modern-provider-management" dir="rtl" lang="ar">
+  <!-- Hero Header Section -->
+  <div class="hero-section">
+    <div class="hero-content">
+      <div class="hero-icon">
+        <i class="fas fa-box-open"></i>
+      </div>
+      <div class="hero-text">
+        <h1 class="hero-title main-color">إدارة المنتجات</h1>
+        <p class="hero-subtitle">
+          لوحة تحكم ذكية ومتقدمة لإدارة جميع المنتجات والأصناف
+        </p>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <button 
+        class="btn btn-primary modern-add-btn"
+        (click)="openCreateProductModal()"
+        type="button"
+        [disabled]="loading"
+      >
+        <i class="fas fa-plus me-2"></i>
+        إضافة منتج جديد
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-section" *ngIf="statistics">
+    <div class="row g-3">
+      <div class="col-lg-3 col-md-6">
+        <div class="stat-card total">
+          <div class="stat-value">{{ statistics.totalProducts }}</div>
+          <div class="stat-label">إجمالي المنتجات</div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="stat-card active">
+          <div class="stat-value">{{ statistics.activeProducts }}</div>
+          <div class="stat-label">منتجات نشطة</div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="stat-card pending">
+          <div class="stat-value">{{ statistics.productsWithDiscount }}</div>
+          <div class="stat-label">منتجات مخفضة</div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="stat-card new">
+          <div class="stat-value">{{ statistics.createdThisMonth }}</div>
+          <div class="stat-label">جديد هذا الشهر</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <button 
+          class="btn btn-outline-warning filter-toggle"
+          (click)="showFilters = !showFilters"
+          type="button"
+        >
+          <i class="fas fa-filter me-2"></i>
+          {{ showFilters ? 'إخفاء الفلاتر' : 'إظهار الفلاتر' }}
+          <i class="fas" [ngClass]="showFilters ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </button>
+      </div>
+      <div class="col-md-6">
+        <div class="search-container">
+          <i class="fas fa-search search-icon"></i>
+          <input
+            type="text"
+            class="form-control search-input"
+            placeholder="البحث عن المنتجات..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
+          />
+          <button 
+            class="btn btn-clear"
+            *ngIf="searchTerm"
+            (click)="searchTerm = ''; onSearchChange()"
+            type="button"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="col-md-3 text-end">
+        <button 
+          class="btn btn-outline-secondary"
+          (click)="clearFilters()"
+          type="button"
+          [disabled]="loading"
+        >
+          <i class="fas fa-refresh me-2"></i>
+          مسح الفلاتر
+        </button>
+      </div>
+    </div>
+
+    <!-- Advanced Filters -->
+    <div class="filters-content" [ngClass]="{ 'show': showFilters }">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">الصنف</label>
+          <select 
+            class="form-select"
+            [(ngModel)]="selectedCategory"
+            (change)="onFilterChange()"
+          >
+            <option value="">جميع الأصناف</option>
+            <option *ngFor="let category of categories" [value]="category.id">
+              {{ category.name }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">الحالة</label>
+          <select 
+            class="form-select"
+            [(ngModel)]="selectedStatus"
+            (change)="onFilterChange()"
+          >
+            <option *ngFor="let status of statusOptions" [value]="status.value">
+              {{ status.label }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">السعر الأدنى</label>
+          <input
+            type="number"
+            class="form-control"
+            placeholder="0"
+            [(ngModel)]="minPrice"
+            (input)="onFilterChange()"
+            min="0"
+          />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">السعر الأعلى</label>
+          <input
+            type="number"
+            class="form-control"
+            placeholder="1000"
+            [(ngModel)]="maxPrice"
+            (input)="onFilterChange()"
+            min="0"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div class="alert alert-danger modern-alert" *ngIf="error">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    {{ error }}
+    <button 
+      type="button" 
+      class="btn-close" 
+      (click)="error = null"
+      aria-label="إغلاق"
+    ></button>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-section" *ngIf="loading">
+    <div class="spinner-border text-warning" role="status"></div>
+    <p class="loading-text">جاري التحميل...</p>
+  </div>
+
+  <!-- Table Section -->
+  <div class="table-section" *ngIf="!loading">
+    <div class="table-header">
+      <div class="table-title">
+        <i class="fas fa-th table-icon"></i>
+        <span class="title-text">إدارة المنتجات</span>
+      </div>
+      <div class="table-controls">
+        <div class="show-entries">
+          <span>{{ products.length }}</span>
+          <span class="control-label">من {{ totalCount }} منتج</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="table modern-table">
+        <thead>
+          <tr>
+            <th class="text-center">#</th>
+            <th class="text-center">الصورة</th>
+            <th>
+              <button 
+                class="sort-btn"
+                (click)="onSort('Name')"
+              >
+                اسم المنتج
+                <i class="sort-icon" [ngClass]="getSortIcon('Name')"></i>
+              </button>
+            </th>
+            <th>الصنف</th>
+            <th class="text-center">
+              <button 
+                class="sort-btn"
+                (click)="onSort('Price')"
+              >
+                السعر
+                <i class="sort-icon" [ngClass]="getSortIcon('Price')"></i>
+              </button>
+            </th>
+            <th class="text-center">الحالة</th>
+            <th class="text-center">
+              <button 
+                class="sort-btn"
+                (click)="onSort('CreatedAt')"
+              >
+                تاريخ الإضافة
+                <i class="sort-icon" [ngClass]="getSortIcon('CreatedAt')"></i>
+              </button>
+            </th>
+            <th class="text-center">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of products; let i = index" class="table-row">
+            <td class="text-center">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+            <td class="text-center">
+              <div class="product-image-container">
+                <img 
+                  [src]="getProductImageUrl(product)" 
+                  [alt]="product.name"
+                  class="product-image"
+                  (error)="onImageError($event)"
+                  loading="lazy"
+                />
+              </div>
+            </td>
+            <td>
+              <div class="product-info">
+                <div class="product-name">{{ product.name }}</div>
+                <div class="product-details" *ngIf="product.newPrice">
+                  <span class="original-price">{{ formatCurrency(product.price) }}</span>
+                  <span class="discounted-price">{{ formatCurrency(product.newPrice) }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="category-badge">{{ product.categoryName }}</span>
+            </td>
+            <td >
+              <div class="price-info">
+                <span class="main-price" [ngClass]="{ 'has-discount': product.newPrice }">
+                  {{ formatCurrency(product.price) }}
+                </span>
+                <span class="discount-price" *ngIf="product.newPrice">
+                  {{ formatCurrency(product.newPrice) }}
+                </span>
+              </div>
+            </td>
+            <td class="text-center">
+              <span [ngClass]="getStatusBadgeClass(product.isActive)">
+                {{ getStatusText(product.isActive) }}
+              </span>
+            </td>
+            <td>
+              <small class="text-muted">
+                {{ product.createdAt | date:'dd/MM/yyyy' }}
+              </small>
+            </td>
+            <td class="text-center">
+              <div class="action-buttons">
+                <button 
+                  class="btn btn-sm btn-outline-primary me-1"
+                  (click)="openEditProductModal(product)"
+                  [disabled]="actionLoading[product.id]"
+                  title="تعديل المنتج"
+                >
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button 
+                  class="btn btn-sm btn-outline-danger"
+                  (click)="openDeleteProductModal(product)"
+                  [disabled]="actionLoading[product.id]"
+                  title="حذف المنتج"
+                >
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="products.length === 0 && !loading">
+        <div class="empty-icon">
+          <i class="fas fa-box-open"></i>
+        </div>
+        <h5>لا توجد منتجات</h5>
+        <p>لم يتم العثور على أي منتجات تطابق المعايير المحددة</p>
+      </div>
+    </div>
+
+    <!-- Pagination Section -->
+    <div class="pagination-section" *ngIf="totalPages > 1">
+      <nav aria-label="صفحات المنتجات">
+        <ul class="pagination modern-pagination justify-content-center">
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <button 
+              class="page-link"
+              (click)="onPageChange(currentPage - 1)"
+              [disabled]="currentPage === 1"
+            >
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </li>
+          
+          <li 
+            *ngFor="let page of getPageNumbers()" 
+            class="page-item"
+            [class.active]="page === currentPage"
+          >
+            <button 
+              class="page-link"
+              (click)="onPageChange(page)"
+            >
+              {{ page }}
+            </button>
+          </li>
+          
+          <li class="page-item" [class.disabled]="currentPage === totalPages">
+            <button 
+              class="page-link"
+              (click)="onPageChange(currentPage + 1)"
+              [disabled]="currentPage === totalPages"
+            >
+              <i class="fas fa-chevron-left"></i>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Shared Modal Component -->
+  <app-shared-modal-component
+    *ngIf="modalConfig"
+    [config]="modalConfig"
+    [form]="modalForm!"
+    [loading]="modalLoading"
+    [saving]="modalSaving"
+    [error]="modalError"
+    (saveClicked)="onModalSave()"
+    (cancelClicked)="closeModal()"
+    (closeClicked)="closeModal()"
+  ></app-shared-modal-component>
+</div>
