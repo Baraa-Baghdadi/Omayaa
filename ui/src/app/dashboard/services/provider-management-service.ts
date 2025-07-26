@@ -9,7 +9,7 @@ export interface ProviderManagementDto {
   providerName: string;
   telephone: string;
   mobile: string;
-  address?:string;
+  address?: string;
   creationTime: Date;
   email?: string;
   displayName?: string;
@@ -69,13 +69,35 @@ export interface LockAccountRequestDto {
   reason?: string;
 }
 
+export interface CreateProviderDto {
+  providerName: string;
+  password: string;
+  confirmPassword: string;
+  mobile: string;
+  telephone?: string;
+  address: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class ProviderManagementService {
-   private apiUrl = environment.API_URL + "api/ProviderManagement/";
+  private apiUrl = environment.API_URL + "api/ProviderManagement/";
+  private accountApiUrl = environment.API_URL + "api/Account/";
 
   constructor(private http: HttpClient) { }
+
+  /**
+   * Create a new provider account
+   * @param providerData Provider registration data
+   * @returns Observable of boolean
+   */
+  createProvider(providerData: CreateProviderDto): Observable<boolean> {
+    return this.http.post<boolean>(
+      this.accountApiUrl + 'Register',
+      providerData
+    );
+  }
 
   /**
    * Get all providers with advanced filtering and pagination
