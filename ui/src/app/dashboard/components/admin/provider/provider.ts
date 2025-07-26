@@ -1,25 +1,40 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { GetProvidersRequestDto, LockAccountRequestDto, ProviderManagementDto, ProviderManagementService, ProviderStatisticsDto } from '../../../services/provider-management-service';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule } from '@angular/forms';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { ModalConfig, ModalResult, SharedModalComponent } from '../../../../shared/components/shared-modal-component/shared-modal-component';
+import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { SharedModalService } from '../../../../shared/services/shared-modal-service';
+import { ErrorPopup } from '../../../../shared/services/error-popup';
 // Declare Bootstrap for TypeScript
 declare var bootstrap: any;
 @Component({
   selector: 'app-provider',
   standalone:true,
-  imports: [CommonModule,NgClass,FormsModule,NgbDropdownModule],
+  imports: [CommonModule, NgClass, FormsModule, NgbDropdownModule, SharedModalComponent],
   templateUrl: './provider.html',
   styleUrl: './provider.scss'
 })
 
 export class Provider implements OnInit {
-   // Expose Math for template
+   @ViewChild(SharedModalComponent) modalComponent!: SharedModalComponent;
+
+  // Subject for managing subscriptions
+  private destroy$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
+
+  // Flag to prevent duplicate API calls
+  private isLoadingProviders = false;
+  private isLoadingStatistics = false;
+  private isProcessingModal = false;
+
+  // Expose Math for template
   Math = Math;
   
   // Data properties
   providers: ProviderManagementDto[] = [];
-  statistics: ProviderStatisticsDto | null = null;
+  statistics: any | null = null;
   loading = false;
   error: string | null = null;
 
@@ -45,6 +60,22 @@ export class Provider implements OnInit {
   // Action loading states
   actionLoading: { [key: string]: boolean } = {};
 
+  // Modal properties
+  modalConfig: any = {
+    title: '',
+    fields: [],
+    saveButtonText: 'حفظ',
+    cancelButtonText: 'إلغاء',
+    showCloseButton: true,
+    centered: true,
+    backdrop: true,
+    keyboard: true
+  };
+  modalForm : any | null = null;
+  modalLoading = false;
+  modalSaving = false;
+  modalError: string | null = null;
+
   // Status options
   statusOptions = [
     { value: '', label: 'جميع الحالات' },
@@ -61,12 +92,68 @@ export class Provider implements OnInit {
     { value: 'false', label: 'غير مفعل' }
   ];
 
-  constructor(private providerService: ProviderManagementService) {}
+  constructor(
+    private providerService: ProviderManagementService,
+    private modalService: SharedModalService,
+    private errorPopup: ErrorPopup,
+    private fb: FormBuilder
+  ) {
+    this.modalForm = this.fb.group({});
+  }
 
   ngOnInit(): void {
     this.loadProviders();
     this.loadStatistics();
     this.initializeModal();
+    this.setupSearchSubscription();
+    this.setupModalSubscriptions();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private setupSearchSubscription(): void {
+    this.searchSubject
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.currentPage = 1;
+        this.loadProviders();
+      });
+  }
+
+  private setupModalSubscriptions(): void {
+    // Subscribe to modal service observables
+    this.modalService.config$.pipe(takeUntil(this.destroy$)).subscribe(config => {
+      this.modalConfig = config;
+    });
+
+    this.modalService.form$.pipe(takeUntil(this.destroy$)).subscribe(form => {
+      this.modalForm = form;
+    });
+
+    this.modalService.loading$.pipe(takeUntil(this.destroy$)).subscribe(loading => {
+      this.modalLoading = loading;
+    });
+
+    this.modalService.saving$.pipe(takeUntil(this.destroy$)).subscribe(saving => {
+      this.modalSaving = saving;
+    });
+
+    this.modalService.error$.pipe(takeUntil(this.destroy$)).subscribe(error => {
+      this.modalError = error;
+    });
+
+    this.modalService.result$.pipe(takeUntil(this.destroy$)).subscribe(result => {
+      if (result && !this.isProcessingModal) {
+        this.handleModalResult(result);
+      }
+    });
   }
 
   private initializeModal(): void {
@@ -81,7 +168,168 @@ export class Provider implements OnInit {
     }, 100);
   }
 
+  // Add new provider method
+  openAddProviderModal(): void {
+    const modalConfig: ModalConfig = {
+      title: 'إضافة مزود جديد',
+      subtitle: 'أدخل بيانات المزود الجديد',
+      fields: [
+        SharedModalService.createTextField('providerName', 'اسم المزود', {
+          placeholder: 'أدخل اسم المزود',
+          required: true,
+          validation: { minLength: 2, maxLength: 100 }
+        }),
+        SharedModalService.createPasswordField('password', 'كلمة المرور', {
+          placeholder: 'أدخل كلمة المرور',
+          required: true,
+          validation: { minLength: 6 }
+        }),
+        SharedModalService.createPasswordField('confirmPassword', 'تأكيد كلمة المرور', {
+          placeholder: 'أعد إدخال كلمة المرور',
+          required: true,
+          validation: { minLength: 6 }
+        }),
+        {
+          key: 'mobile',
+          label: 'رقم الموبايل',
+          type: 'tel',
+          placeholder: '0900000000',
+          required: true,
+          validation: { pattern: '^[0-9]{10}$' }
+        },
+        {
+          key: 'telephone',
+          label: 'رقم الهاتف',
+          type: 'tel',
+          placeholder: '0110000000',
+          required: false,
+          validation: { pattern: '^[0-9]{10}$' }
+        },
+        SharedModalService.createTextareaField('address', 'العنوان', 3, {
+          placeholder: 'أدخل العنوان التفصيلي',
+          required: true,
+          validation: { minLength: 10, maxLength: 500 }
+        })
+      ],
+      saveButtonText: 'إنشاء الحساب',
+      cancelButtonText: 'إلغاء',
+      saveButtonClass: 'btn-primary',
+      size: 'lg'
+    };
+
+    this.modalService.openModal(modalConfig);
+
+        // MANUALLY trigger modal show after a short delay
+    setTimeout(() => {
+      if (this.modalComponent) {
+        this.modalComponent.show();
+      }
+      this.isProcessingModal = false;
+    }, 200);
+  }
+
+  handleModalResult(result: ModalResult): void {
+    if (this.isProcessingModal) return;
+    
+    this.isProcessingModal = true;
+
+    try {
+      if (result.action === 'save' && result.data) {
+        this.onModalSave(result.data);
+      } else if (result.action === 'cancel' || result.action === 'close') {
+        this.onModalCancel();
+      }
+    } finally {
+      setTimeout(() => {
+        this.isProcessingModal = false;
+      }, 100);
+    }
+  }
+
+  async onModalSave(formData: any): Promise<void> {
+    try {
+      this.modalService.setSaving(true);
+      this.modalService.setError(null);
+
+      // Validate passwords match
+      if (formData.password !== formData.confirmPassword) {
+        this.modalService.setError('كلمة المرور وتأكيد كلمة المرور غير متطابقتين');
+        return;
+      }
+
+      // Validate required fields
+      if (!formData.providerName || !formData.password || !formData.mobile || !formData.address) {
+        this.modalService.setError('جميع الحقول المطلوبة يجب أن تكون مُعبأة');
+        return;
+      }
+
+      // Validate mobile number format
+      const mobilePattern = /^[0-9]{10}$/;
+      if (!mobilePattern.test(formData.mobile)) {
+        this.modalService.setError('رقم الموبايل يجب أن يكون 10 أرقام فقط');
+        return;
+      }
+
+      // Validate telephone if provided
+      if (formData.telephone && !mobilePattern.test(formData.telephone)) {
+        this.modalService.setError('رقم الهاتف يجب أن يكون 10 أرقام فقط');
+        return;
+      }
+
+      // Create provider data
+      const providerData = {
+        providerName: formData.providerName.trim(),
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        mobile: formData.mobile.trim(),
+        telephone: formData.telephone?.trim() || '',
+        address: formData.address.trim()
+      };
+
+      const success = await this.providerService.createProvider(providerData).toPromise();
+
+      if (success) {
+        this.modalService.setResult({ action: 'save', data: formData });
+        this.modalComponent.hide();
+        
+        // Refresh data
+        await this.loadProviders();
+        await this.loadStatistics();
+        
+        // Show success message
+        // this.errorPopup.showSuccess('تم إنشاء حساب المزود بنجاح');
+      } else {
+        this.modalService.setError('فشل في إنشاء الحساب. حاول مرة أخرى.');
+      }
+
+    } catch (error: any) {
+      console.error('Error creating provider:', error);
+      
+      let errorMessage = 'حدث خطأ أثناء إنشاء الحساب';
+      
+      if (error?.error?.message) {
+        errorMessage = error.error.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+
+      this.modalService.setError(errorMessage);
+    } finally {
+      this.modalService.setSaving(false);
+    }
+  }
+
+  onModalCancel(): void {
+    this.modalComponent.hide();
+    this.modalService.setResult({ action: 'cancel' });
+  }
+
   async loadProviders(): Promise<void> {
+    if (this.isLoadingProviders) return;
+    
+    this.isLoadingProviders = true;
     this.loading = true;
     this.error = null;
 
@@ -100,309 +348,241 @@ export class Provider implements OnInit {
       
       if (response) {
         this.providers = response.providers;
+        this.currentPage = response.pagination.currentPage;
         this.totalPages = response.pagination.totalPages;
         this.totalCount = response.pagination.totalCount;
-        this.currentPage = response.pagination.currentPage;
       }
     } catch (error: any) {
-      this.error = 'حدث خطأ في تحميل البيانات';
+      this.error = 'حدث خطأ أثناء تحميل بيانات المزودين';
       console.error('Error loading providers:', error);
     } finally {
       this.loading = false;
+      this.isLoadingProviders = false;
     }
   }
 
   async loadStatistics(): Promise<void> {
+    if (this.isLoadingStatistics) return;
+    
+    this.isLoadingStatistics = true;
+
     try {
-      this.statistics = await this.providerService.getProviderStatistics().toPromise() || null;
-    } catch (error) {
+      this.statistics = await this.providerService.getProviderStatistics().toPromise();
+    } catch (error: any) {
       console.error('Error loading statistics:', error);
+    } finally {
+      this.isLoadingStatistics = false;
     }
   }
 
+  // Search functionality
   onSearchChange(): void {
+    this.searchSubject.next(this.searchTerm);
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.onSearchChange();
+  }
+
+  // Filter functionality
+  onStatusChange(): void {
     this.currentPage = 1;
     this.loadProviders();
   }
 
-  onFilterChange(): void {
+  onVerificationChange(): void {
     this.currentPage = 1;
     this.loadProviders();
   }
 
-  onPageChange(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.loadProviders();
-    }
-  }
-
-  onSort(column: string): void {
-    if (this.sortBy === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortBy = column;
-      this.sortDirection = 'desc';
-    }
-    this.loadProviders();
-  }
-
-  getSortIcon(column: string): string {
-    if (this.sortBy !== column) return 'fas fa-sort';
-    return this.sortDirection === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
-  }
-
-  // Provider status methods using the service
-  isProviderLocked(provider: ProviderManagementDto): boolean {
-    return this.providerService.isProviderLocked(provider);
-  }
-
-  getProviderStatusText(provider: ProviderManagementDto): string {
-    return this.providerService.getProviderStatus(provider);
-  }
-
-  getProviderStatusBadgeClass(provider: ProviderManagementDto): string {
-    return this.providerService.getStatusBadgeClass(provider);
-  }
-
-  getProviderStatusIcon(provider: ProviderManagementDto): string {
-    return this.providerService.getStatusIcon(provider);
-  }
-
-  closeLockModal(): void {
-    if (this.lockModal) {
-      this.lockModal.hide();
-    }
-    this.selectedProvider = null;
-    this.lockReason = '';
-    this.lockUntilDate = '';
-  }
-
-  async lockProvider(provider: ProviderManagementDto): Promise<void> {
-   this.setActionLoading(provider.tenantId, false);
-    
-    try {
-      const success = await this.providerService.unlockProvider(provider.tenantId).toPromise();
-
-      if (success) {
-        await this.loadProviders();
-        await this.loadStatistics();
-        this.showSuccessMessage('تم إلغاء قفل الحساب بنجاح');
-      } else {
-        this.error = 'فشل في إلغاء قفل الحساب';
-      }
-    } catch (error) {
-      console.error('Error unlocking provider:', error);
-      this.error = 'حدث خطأ في إلغاء قفل الحساب';
-    } finally {
-      this.setActionLoading(provider.tenantId, false);
-    }
-  }
-  
-
-  async unlockProvider(provider: ProviderManagementDto): Promise<void> {
-    this.setActionLoading(provider.tenantId, true);
-    
-    try {
-      const success = await this.providerService.unlockProvider(provider.tenantId).toPromise();
-
-      if (success) {
-        await this.loadProviders();
-        await this.loadStatistics();
-        this.showSuccessMessage('تم إلغاء قفل الحساب بنجاح');
-      } else {
-        this.error = 'فشل في إلغاء قفل الحساب';
-      }
-    } catch (error) {
-      console.error('Error unlocking provider:', error);
-      this.error = 'حدث خطأ في إلغاء قفل الحساب';
-    } finally {
-      this.setActionLoading(provider.tenantId, false);
-    }
-  }
-
-  async toggleVerification(provider: ProviderManagementDto): Promise<void> {
-    this.setActionLoading(provider.tenantId, true);
-    
-    try {
-      const updateRequest = {
-        isEmailVerified: !provider.isEmailVerified,
-        isPhoneVerified: !provider.isPhoneVerified
-      };
-
-      const success = await this.providerService.updateProviderVerification(
-        provider.tenantId,
-        updateRequest
-      ).toPromise();
-
-      if (success) {
-        await this.loadProviders();
-        await this.loadStatistics();
-        const action = updateRequest.isEmailVerified ? 'تفعيل' : 'إلغاء تفعيل';
-        this.showSuccessMessage(`تم ${action} الحساب بنجاح`);
-      } else {
-        this.error = 'فشل في تحديث حالة التفعيل';
-      }
-    } catch (error) {
-      console.error('Error updating verification:', error);
-      this.error = 'حدث خطأ في تحديث حالة التفعيل';
-    } finally {
-      this.setActionLoading(provider.tenantId, false);
-    }
-  }
-
-  viewProviderDetails(provider: ProviderManagementDto): void {
-    // Implement view details functionality
-    console.log('View provider details:', provider);
-    // You can open a modal or navigate to a details page
-  }
-
-  // Utility methods
-  setActionLoading(tenantId: string, loading: boolean): void {
-    this.actionLoading[tenantId] = loading;
-  }
-
-  showSuccessMessage(message: string): void {
-    // You can implement a toast notification service here
-    console.log('Success:', message);
-    // For now, we'll use a simple timeout to clear any existing errors
-    setTimeout(() => {
-      this.error = null;
-    }, 3000);
+  toggleFilters(): void {
+    this.showFilters = !this.showFilters;
   }
 
   clearFilters(): void {
-    this.searchTerm = '';
     this.selectedStatus = '';
     this.selectedVerification = '';
     this.currentPage = 1;
     this.loadProviders();
   }
 
-  formatDate(date: Date | string): string {
-    if (!date) return '-';
-    const d = new Date(date);
-    return d.toLocaleDateString('ar-EG', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+  // Sorting functionality
+  sort(field: string): void {
+    if (this.sortBy === field) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = field;
+      this.sortDirection = 'asc';
+    }
+    this.currentPage = 1;
+    this.loadProviders();
+  }
+
+  getSortIcon(field: string): string {
+    if (this.sortBy !== field) {
+      return 'fas fa-sort text-muted';
+    }
+    return this.sortDirection === 'asc' ? 'fas fa-sort-up text-primary' : 'fas fa-sort-down text-primary';
+  }
+
+  // Pagination functionality
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+      this.currentPage = page;
+      this.loadProviders();
+    }
+  }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const start = Math.max(1, this.currentPage - 2);
+    const end = Math.min(this.totalPages, this.currentPage + 2);
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    return pages;
+  }
+
+  // Provider status methods
+  getProviderStatus(provider: ProviderManagementDto): string {
+    return this.providerService.getProviderStatus(provider);
+  }
+
+  getStatusBadgeClass(provider: ProviderManagementDto): string {
+    return this.providerService.getStatusBadgeClass(provider);
+  }
+
+  getStatusIcon(provider: ProviderManagementDto): string {
+    return this.providerService.getStatusIcon(provider);
+  }
+
+  isProviderLocked(provider: ProviderManagementDto): boolean {
+    return this.providerService.isProviderLocked(provider);
+  }
+
+  // Provider actions
+  viewProvider(provider: ProviderManagementDto): void {
+    this.selectedProvider = provider;
+    // Implement view logic
+  }
+
+  editProvider(provider: ProviderManagementDto): void {
+    this.selectedProvider = provider;
+    // Implement edit logic
+  }
+
+  openLockModal(provider: ProviderManagementDto): void {
+    this.selectedProvider = provider;
+    this.lockReason = '';
+    this.lockUntilDate = '';
+    
+    if (this.lockModal) {
+      this.lockModal.show();
+    }
+  }
+
+  async lockProvider(): Promise<void> {
+    if (!this.selectedProvider) return;
+
+    this.lockingProvider = true;
+
+    try {
+      const lockUntil = this.lockUntilDate ? new Date(this.lockUntilDate) : undefined;
+      const success = await this.providerService.lockProvider(
+        this.selectedProvider.tenantId, 
+        lockUntil, 
+        this.lockReason
+      ).toPromise();
+
+      if (success) {
+        await this.loadProviders();
+        await this.loadStatistics();
+        this.lockModal.hide();
+        // this.errorPopup.showSuccess('تم قفل الحساب بنجاح');
+      } else {
+        this.errorPopup.showError('فشل في قفل الحساب');
+      }
+    } catch (error: any) {
+      this.errorPopup.showError('حدث خطأ أثناء قفل الحساب');
+      console.error('Error locking provider:', error);
+    } finally {
+      this.lockingProvider = false;
+    }
+  }
+
+  async unlockProvider(provider: ProviderManagementDto): Promise<void> {
+    const actionKey = `unlock_${provider.id}`;
+    this.actionLoading[actionKey] = true;
+
+    try {
+      const success = await this.providerService.unlockProvider(provider.tenantId).toPromise();
+
+      if (success) {
+        await this.loadProviders();
+        await this.loadStatistics();
+        // this.errorPopup.showSuccess('تم إلغاء قفل الحساب بنجاح');
+      } else {
+        this.errorPopup.showError('فشل في إلغاء قفل الحساب');
+      }
+    } catch (error: any) {
+      this.errorPopup.showError('حدث خطأ أثناء إلغاء قفل الحساب');
+      console.error('Error unlocking provider:', error);
+    } finally {
+      this.actionLoading[actionKey] = false;
+    }
+  }
+
+  async updateVerification(provider: ProviderManagementDto, isEmailVerified: boolean, isPhoneVerified: boolean): Promise<void> {
+    const actionKey = `verify_${provider.id}`;
+    this.actionLoading[actionKey] = true;
+
+    try {
+      const request = { isEmailVerified, isPhoneVerified };
+      const success = await this.providerService.updateProviderVerification(provider.tenantId, request).toPromise();
+
+      if (success) {
+        await this.loadProviders();
+        await this.loadStatistics();
+        // this.errorPopup.showSuccess('تم تحديث حالة التحقق بنجاح');
+      } else {
+        this.errorPopup.showError('فشل في تحديث حالة التحقق');
+      }
+    } catch (error: any) {
+      this.errorPopup.showError('حدث خطأ أثناء تحديث حالة التحقق');
+      console.error('Error updating verification:', error);
+    } finally {
+      this.actionLoading[actionKey] = false;
+    }
+  }
+
+  // Utility methods
+  formatDate(date: Date | string | null): string {
+    if (!date) return 'غير متوفر';
+    
+    const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('ar-SA-u-ca-gregory', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
     });
   }
 
-  getMinDateTime(): string {
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    return now.toISOString().slice(0, 16);
-  }
+formatMobile(mobile: string): string {
+  if (!mobile) return '';
 
-  getPaginationArray(): number[] {
-    const delta = 2;
-    const range = [];
-    const rangeWithDots = [];
+  // Format mobile number (e.g., 0901234567 -> 090 123 4567)
+  const formatted = mobile.replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
 
-    for (let i = Math.max(2, this.currentPage - delta); 
-         i <= Math.min(this.totalPages - 1, this.currentPage + delta); 
-         i++) {
-      range.push(i);
-    }
+  // Convert to Arabic-Indic numerals
+  const arabicFormatted = formatted.replace(/\d/g, d =>
+    '٠١٢٣٤٥٦٧٨٩'[parseInt(d)]
+  );
 
-    if (this.currentPage - delta > 2) {
-      rangeWithDots.push(1, -1);
-    } else {
-      rangeWithDots.push(1);
-    }
-
-    rangeWithDots.push(...range);
-
-    if (this.currentPage + delta < this.totalPages - 1) {
-      rangeWithDots.push(-1, this.totalPages);
-    } else {
-      rangeWithDots.push(this.totalPages);
-    }
-
-    return rangeWithDots;
-  }
-
-  trackByFn(index: number, item: ProviderManagementDto): string {
-    return item.tenantId;
-  }
-
-  // Legacy methods for backwards compatibility
-  getStatusBadgeClass(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'نشط':
-      case 'active':
-        return 'badge-success';
-      case 'معطل':
-      case 'suspended':
-        return 'badge-danger';
-      case 'مقفل':
-      case 'locked':
-        return 'badge-danger';
-      case 'بانتظار التنشيط':
-      case 'pending verification':
-        return 'badge-warning';
-      case 'غير نشط':
-      case 'inactive':
-        return 'badge-secondary';
-      default:
-        return 'badge-secondary';
-    }
-  }
-
-  getStatusIcon(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'نشط':
-      case 'active':
-        return 'fas fa-check-circle text-success';
-      case 'معطل':
-      case 'suspended':
-        return 'fas fa-ban text-danger';
-      case 'مقفل':
-      case 'locked':
-        return 'fas fa-lock text-danger';
-      case 'بانتظار التنشيط':
-      case 'pending verification':
-        return 'fas fa-clock text-warning';
-      case 'غير نشط':
-      case 'inactive':
-        return 'fas fa-times-circle text-secondary';
-      default:
-        return 'fas fa-question-circle text-secondary';
-    }
-  }
-
-  // Additional methods for the new design
-  toggleFilters(): void {
-    this.showFilters = !this.showFilters;
-  }
-
-  // Method to get provider status in Arabic
-  getProviderStatusArabic(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return 'نشط';
-      case 'suspended':
-        return 'معطل';
-      case 'locked':
-        return 'مقفل';
-      case 'pending verification':
-        return 'بانتظار التنشيط';
-      case 'inactive':
-        return 'غير نشط';
-      default:
-        return status;
-    }
-  }
-
-  // Method to get short date format for the table
-  getShortDate(date: Date | string): string {
-    if (!date) return '-';
-    const d = new Date(date);
-    return d.toLocaleDateString('en-US', {
-      month: 'short',
-      day: '2-digit',
-      year: 'numeric'
-    });
-  }
+  return arabicFormatted;
+}
 }
