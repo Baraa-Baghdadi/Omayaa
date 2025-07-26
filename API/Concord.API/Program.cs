@@ -1,6 +1,7 @@
 using Concord.Application.Services.Account.Providers;
 using Concord.Application.Services.Categories;
 using Concord.Application.Services.Mail;
+using Concord.Application.Services.Products;
 using Concord.Application.Services.Providers;
 using Concord.Application.Services.RefreshToken;
 using Concord.Application.Services.Token;
@@ -13,7 +14,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
@@ -82,6 +82,7 @@ builder.Services.AddTransient<IMailingService, MailingService>();
 builder.Services.AddTransient<IProviderAccountService, ProviderAccountService>();
 builder.Services.AddTransient<IProviderManagementService, ProviderManagementService>();
 builder.Services.AddTransient<ICategoryService, CategoryService>();
+builder.Services.AddTransient<IProductManagementService, ProductManagementService>();
 
 
 // For Add Auto mapper to our project

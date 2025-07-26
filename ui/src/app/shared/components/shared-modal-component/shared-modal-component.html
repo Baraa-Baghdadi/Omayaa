@@ -1,278 +1,329 @@
-    <!-- Modal -->
-    <div 
-      class="modal fade" 
-      #modalElement
-      id="sharedModal" 
-      tabindex="-1" 
-      aria-labelledby="sharedModalLabel" 
-      aria-hidden="true"
-      [attr.data-bs-backdrop]="config.backdrop !== false ? (config.backdrop === 'static' ? 'static' : 'true') : 'false'"
-      [attr.data-bs-keyboard]="config.keyboard !== false ? 'true' : 'false'"
-    >
-      <div 
-        class="modal-dialog" 
-        [ngClass]="{
-          'modal-sm': config.size === 'sm',
-          'modal-lg': config.size === 'lg', 
-          'modal-xl': config.size === 'xl',
-          'modal-dialog-centered': config.centered
-        }"
-      >
-        <div class="modal-content">
-          <!-- Modal Header -->
-          <div class="modal-header">
-            <div>
-              <h5 class="modal-title" id="sharedModalLabel">
-                <!-- <i class="fas fa-edit me-2 text-primary"></i> -->
-                {{ config.title }}
-              </h5>
-              <p class="modal-subtitle mb-0" *ngIf="config.subtitle">
-                {{ config.subtitle }}
-              </p>
-            </div>
-            <!-- <button 
-              type="button" 
-              class="btn-close" 
-              *ngIf="config.showCloseButton !== false"
-              (click)="onClose()"
-              aria-label="إغلاق"
-            ></button> -->
-          </div>
+<!-- Modal -->
+<div 
+  class="modal fade" 
+  #modalElement
+  id="sharedModal" 
+  tabindex="-1" 
+  aria-labelledby="sharedModalLabel" 
+  aria-hidden="true"
+  [attr.data-bs-backdrop]="config.backdrop !== false ? (config.backdrop === 'static' ? 'static' : 'true') : 'false'"
+  [attr.data-bs-keyboard]="config.keyboard !== false ? 'true' : 'false'"
+>
+  <div 
+    class="modal-dialog" 
+    [ngClass]="{
+      'modal-sm': config.size === 'sm',
+      'modal-lg': config.size === 'lg', 
+      'modal-xl': config.size === 'xl',
+      'modal-dialog-centered': config.centered
+    }"
+  >
+    <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title" id="sharedModalLabel">
+            {{ config.title }}
+          </h5>
+          <p class="modal-subtitle mb-0" *ngIf="config.subtitle">
+            {{ config.subtitle }}
+          </p>
+        </div>
+        <button 
+          type="button" 
+          class="btn-close" 
+          *ngIf="config.showCloseButton !== false"
+          (click)="onClose()"
+          aria-label="إغلاق"
+        ></button>
+      </div>
 
-          <!-- Modal Body -->
-          <div class="modal-body">
-            <!-- Loading State -->
-            <div class="text-center py-3" *ngIf="loading">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">جاري التحميل...</span>
-              </div>
-            </div>
-
-            <!-- Error Display -->
-            <div class="alert alert-danger d-flex align-items-center mb-3" *ngIf="error">
-              <i class="fas fa-exclamation-triangle me-2"></i>
-              {{ error }}
-              <button 
-                type="button" 
-                class="btn-close ms-auto" 
-                (click)="error = null"
-                aria-label="إغلاق"
-              ></button>
-            </div>
-
-            <!-- Form -->
-            <form [formGroup]="form" (ngSubmit)="onSave()" *ngIf="!loading" dir="rtl">
-              <div class="row g-3">
-                <div 
-                  *ngFor="let field of config.fields; let i = index" 
-                  class="col-12"
-                  [ngClass]="getFieldColumnClass(field)"
-                >
-                  <!-- Text Input -->
-                  <div class="form-group" *ngIf="field.type === 'text' || field.type === 'email' || field.type === 'password' || field.type === 'tel'">
-                    <label class="form-label" [for]="field.key">
-                      {{ field.label }}
-                      <span class="text-danger" *ngIf="field.required">*</span>
-                    </label>
-                    <input 
-                      [type]="field.type"
-                      class="form-control"
-                      [id]="field.key"
-                      [formControlName]="field.key"
-                      [placeholder]="field.placeholder || ''"
-                      [disabled]="field.disabled || false"
-                      [ngClass]="{
-                        'is-invalid': form.get(field.key)?.invalid && form.get(field.key)?.touched,
-                        'is-valid': form.get(field.key)?.valid && form.get(field.key)?.touched
-                      }"
-                    >
-                    <div class="invalid-feedback" *ngIf="form.get(field.key)?.invalid && form.get(field.key)?.touched">
-                      <div *ngIf="form.get(field.key)?.errors?.['required']">
-                        {{ field.label }} مطلوب
-                      </div>
-                      <div *ngIf="form.get(field.key)?.errors?.['email']">
-                        يرجى إدخال بريد إلكتروني صحيح
-                      </div>
-                      <div *ngIf="form.get(field.key)?.errors?.['minlength']">
-                        يجب أن يكون {{ field.label }} على الأقل {{ field.validation?.minLength }} أحرف
-                      </div>
-                      <div *ngIf="form.get(field.key)?.errors?.['maxlength']">
-                        يجب أن يكون {{ field.label }} أقل من {{ field.validation?.maxLength }} حرف
-                      </div>
-                      <div *ngIf="form.get(field.key)?.errors?.['pattern']">
-                        تنسيق {{ field.label }} غير صحيح
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Number Input -->
-                  <div class="form-group" *ngIf="field.type === 'number'">
-                    <label class="form-label" [for]="field.key">
-                      {{ field.label }}
-                      <span class="text-danger" *ngIf="field.required">*</span>
-                    </label>
-                    <input 
-                      type="number"
-                      class="form-control"
-                      [id]="field.key"
-                      [formControlName]="field.key"
-                      [placeholder]="field.placeholder || ''"
-                      [disabled]="field.disabled || false"
-                      [min]="field.validation?.min ?? 0"
-                      [max]="field.validation?.max ?? 0"
-                      [ngClass]="{
-                        'is-invalid': form.get(field.key)?.invalid && form.get(field.key)?.touched,
-                        'is-valid': form.get(field.key)?.valid && form.get(field.key)?.touched
-                      }"
-                    >
-                    <div class="invalid-feedback" *ngIf="form.get(field.key)?.invalid && form.get(field.key)?.touched">
-                      <div *ngIf="form.get(field.key)?.errors?.['required']">
-                        {{ field.label }} مطلوب
-                      </div>
-                      <div *ngIf="form.get(field.key)?.errors?.['min']">
-                        يجب أن يكون {{ field.label }} على الأقل {{ field.validation?.min }}
-                      </div>
-                      <div *ngIf="form.get(field.key)?.errors?.['max']">
-                        يجب أن يكون {{ field.label }} أقل من {{ field.validation?.max }}
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Date Input -->
-                  <div class="form-group" *ngIf="field.type === 'date'">
-                    <label class="form-label" [for]="field.key">
-                      {{ field.label }}
-                      <span class="text-danger" *ngIf="field.required">*</span>
-                    </label>
-                    <input 
-                      type="date"
-                      class="form-control"
-                      [id]="field.key"
-                      [formControlName]="field.key"
-                      [disabled]="field.disabled || false"
-                      [ngClass]="{
-                        'is-invalid': form.get(field.key)?.invalid && form.get(field.key)?.touched,
-                        'is-valid': form.get(field.key)?.valid && form.get(field.key)?.touched
-                      }"
-                    >
-                    <div class="invalid-feedback" *ngIf="form.get(field.key)?.invalid && form.get(field.key)?.touched">
-                      <div *ngIf="form.get(field.key)?.errors?.['required']">
-                        {{ field.label }} مطلوب
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Textarea -->
-                  <div class="form-group" *ngIf="field.type === 'textarea'">
-                    <label class="form-label" [for]="field.key">
-                      {{ field.label }}
-                      <span class="text-danger" *ngIf="field.required">*</span>
-                    </label>
-                    <textarea 
-                      class="form-control"
-                      [id]="field.key"
-                      [formControlName]="field.key"
-                      [placeholder]="field.placeholder || ''"
-                      [disabled]="field.disabled || false"
-                      [rows]="field.rows || 3"
-                      [ngClass]="{
-                        'is-invalid': form.get(field.key)?.invalid && form.get(field.key)?.touched,
-                        'is-valid': form.get(field.key)?.valid && form.get(field.key)?.touched
-                      }"
-                    ></textarea>
-                    <div class="invalid-feedback" *ngIf="form.get(field.key)?.invalid && form.get(field.key)?.touched">
-                      <div *ngIf="form.get(field.key)?.errors?.['required']">
-                        {{ field.label }} مطلوب
-                      </div>
-                      <div *ngIf="form.get(field.key)?.errors?.['minlength']">
-                        يجب أن يكون {{ field.label }} على الأقل {{ field.validation?.minLength }} أحرف
-                      </div>
-                      <div *ngIf="form.get(field.key)?.errors?.['maxlength']">
-                        يجب أن يكون {{ field.label }} أقل من {{ field.validation?.maxLength }} حرف
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Select Dropdown -->
-                  <div class="form-group" *ngIf="field.type === 'select'">
-                    <label class="form-label" [for]="field.key">
-                      {{ field.label }}
-                      <span class="text-danger" *ngIf="field.required">*</span>
-                    </label>
-                    <select 
-                      class="form-select"
-                      [id]="field.key"
-                      [formControlName]="field.key"
-                      [disabled]="field.disabled || false"
-                      [ngClass]="{
-                        'is-invalid': form.get(field.key)?.invalid && form.get(field.key)?.touched,
-                        'is-valid': form.get(field.key)?.valid && form.get(field.key)?.touched
-                      }"
-                    >
-                      <option value="" disabled>{{ field.placeholder || 'اختر ' + field.label }}</option>
-                      <option 
-                        *ngFor="let option of field.options" 
-                        [value]="option.value"
-                      >
-                        {{ option.label }}
-                      </option>
-                    </select>
-                    <div class="invalid-feedback" *ngIf="form.get(field.key)?.invalid && form.get(field.key)?.touched">
-                      <div *ngIf="form.get(field.key)?.errors?.['required']">
-                        {{ field.label }} مطلوب
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Checkbox -->
-                  <div class="form-group" *ngIf="field.type === 'checkbox'">
-                    <div class="form-check">
-                      <input 
-                        class="form-check-input"
-                        type="checkbox"
-                        [id]="field.key"
-                        [formControlName]="field.key"
-                        [disabled]="field.disabled || false"
-                      >
-                      <label class="form-check-label" [for]="field.key">
-                        {{ field.label }}
-                        <span class="text-danger" *ngIf="field.required">*</span>
-                      </label>
-                    </div>
-                    <div class="invalid-feedback d-block" *ngIf="form.get(field.key)?.invalid && form.get(field.key)?.touched">
-                      <div *ngIf="form.get(field.key)?.errors?.['required']">
-                        {{ field.label }} مطلوب
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </form>
-          </div>
-
-          <!-- Modal Footer -->
-          <div class="modal-footer" *ngIf="!loading">
-            <button 
-              type="button" 
-              class="btn"
-              [ngClass]="config.cancelButtonClass || 'btn-outline-secondary'"
-              (click)="onCancel()"
-            >
-              <i class="fas fa-times me-1"></i>
-              {{ config.cancelButtonText || 'إلغاء' }}
-            </button>
-            <button 
-              type="button" 
-              class="btn"
-              [ngClass]="config.saveButtonClass || 'btn-primary'"
-              (click)="onSave()"
-              [disabled]="form.invalid || saving"
-            >
-              <span *ngIf="saving" class="spinner-border spinner-border-sm me-1" role="status"></span>
-              <i *ngIf="!saving" class="fas fa-save me-1"></i>
-              {{ config.saveButtonText || 'حفظ' }}
-            </button>
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <!-- Loading State -->
+        <div class="text-center py-3" *ngIf="loading">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">جاري التحميل...</span>
           </div>
         </div>
+
+        <!-- Error Display -->
+        <div class="alert alert-danger d-flex align-items-center mb-3" *ngIf="error">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          {{ error }}
+          <button 
+            type="button" 
+            class="btn-close ms-auto" 
+            (click)="error = null"
+            aria-label="إغلاق"
+          ></button>
+        </div>
+
+        <!-- Form -->
+        <form [formGroup]="form" (ngSubmit)="onSave()" *ngIf="!loading" dir="rtl">
+          <div class="row g-3">
+            <div 
+              *ngFor="let field of config.fields; let i = index" 
+              class="col-12"
+              [ngClass]="getFieldColumnClass(field)"
+            >
+              
+              <!-- Text Input -->
+              <div class="form-group" *ngIf="field.type === 'text'">
+                <label class="form-label">
+                  {{ field.label }}
+                  <span class="text-danger" *ngIf="field.required">*</span>
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [class.is-invalid]="hasFieldError(field.key)"
+                  [placeholder]="field.placeholder || ''"
+                  [formControlName]="field.key"
+                  [disabled]="field.disabled || saving"
+                />
+                <div class="invalid-feedback" *ngIf="hasFieldError(field.key)">
+                  {{ getFieldErrorMessage(field) }}
+                </div>
+              </div>
+
+              <!-- Email Input -->
+              <div class="form-group" *ngIf="field.type === 'email'">
+                <label class="form-label">
+                  {{ field.label }}
+                  <span class="text-danger" *ngIf="field.required">*</span>
+                </label>
+                <input
+                  type="email"
+                  class="form-control"
+                  [class.is-invalid]="hasFieldError(field.key)"
+                  [placeholder]="field.placeholder || ''"
+                  [formControlName]="field.key"
+                  [disabled]="field.disabled || saving"
+                />
+                <div class="invalid-feedback" *ngIf="hasFieldError(field.key)">
+                  {{ getFieldErrorMessage(field) }}
+                </div>
+              </div>
+
+              <!-- Password Input -->
+              <div class="form-group" *ngIf="field.type === 'password'">
+                <label class="form-label">
+                  {{ field.label }}
+                  <span class="text-danger" *ngIf="field.required">*</span>
+                </label>
+                <input
+                  type="password"
+                  class="form-control"
+                  [class.is-invalid]="hasFieldError(field.key)"
+                  [placeholder]="field.placeholder || ''"
+                  [formControlName]="field.key"
+                  [disabled]="field.disabled || saving"
+                />
+                <div class="invalid-feedback" *ngIf="hasFieldError(field.key)">
+                  {{ getFieldErrorMessage(field) }}
+                </div>
+              </div>
+
+              <!-- Number Input -->
+              <div class="form-group" *ngIf="field.type === 'number'">
+                <label class="form-label">
+                  {{ field.label }}
+                  <span class="text-danger" *ngIf="field.required">*</span>
+                </label>
+                <input
+                  type="number"
+                  class="form-control"
+                  [class.is-invalid]="hasFieldError(field.key)"
+                  [placeholder]="field.placeholder || ''"
+                  [formControlName]="field.key"
+                  [disabled]="field.disabled || saving"
+                  [min]="field.validation?.min ?? 0"
+                  [max]="field.validation?.max ?? 0"
+                />
+                <div class="invalid-feedback" *ngIf="hasFieldError(field.key)">
+                  {{ getFieldErrorMessage(field) }}
+                </div>
+              </div>
+
+              <!-- Textarea -->
+              <div class="form-group" *ngIf="field.type === 'textarea'">
+                <label class="form-label">
+                  {{ field.label }}
+                  <span class="text-danger" *ngIf="field.required">*</span>
+                </label>
+                <textarea
+                  class="form-control"
+                  [class.is-invalid]="hasFieldError(field.key)"
+                  [placeholder]="field.placeholder || ''"
+                  [formControlName]="field.key"
+                  [disabled]="field.disabled || saving"
+                  [rows]="field.rows || 3"
+                ></textarea>
+                <div class="invalid-feedback" *ngIf="hasFieldError(field.key)">
+                  {{ getFieldErrorMessage(field) }}
+                </div>
+              </div>
+
+              <!-- Select Dropdown -->
+              <div class="form-group" *ngIf="field.type === 'select'">
+                <label class="form-label">
+                  {{ field.label }}
+                  <span class="text-danger" *ngIf="field.required">*</span>
+                </label>
+                <select
+                  class="form-select"
+                  [class.is-invalid]="hasFieldError(field.key)"
+                  [formControlName]="field.key"
+                  [disabled]="field.disabled || saving"
+                >
+                  <option value="">اختر {{ field.label }}</option>
+                  <option 
+                    *ngFor="let option of field.options" 
+                    [value]="option.value"
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
+                <div class="invalid-feedback" *ngIf="hasFieldError(field.key)">
+                  {{ getFieldErrorMessage(field) }}
+                </div>
+              </div>
+
+              <!-- Checkbox -->
+              <div class="form-group" *ngIf="field.type === 'checkbox'">
+                <div class="form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    [id]="'checkbox_' + field.key"
+                    [formControlName]="field.key"
+                    [disabled]="field.disabled || saving"
+                  />
+                  <label class="form-check-label" [for]="'checkbox_' + field.key">
+                    {{ field.label }}
+                    <span class="text-danger" *ngIf="field.required">*</span>
+                  </label>
+                </div>
+                <div class="invalid-feedback d-block" *ngIf="hasFieldError(field.key)">
+                  {{ getFieldErrorMessage(field) }}
+                </div>
+              </div>
+
+              <!-- Date Input -->
+              <div class="form-group" *ngIf="field.type === 'date'">
+                <label class="form-label">
+                  {{ field.label }}
+                  <span class="text-danger" *ngIf="field.required">*</span>
+                </label>
+                <input
+                  type="date"
+                  class="form-control"
+                  [class.is-invalid]="hasFieldError(field.key)"
+                  [formControlName]="field.key"
+                  [disabled]="field.disabled || saving"
+                />
+                <div class="invalid-feedback" *ngIf="hasFieldError(field.key)">
+                  {{ getFieldErrorMessage(field) }}
+                </div>
+              </div>
+
+              <!-- Phone Input -->
+              <div class="form-group" *ngIf="field.type === 'tel'">
+                <label class="form-label">
+                  {{ field.label }}
+                  <span class="text-danger" *ngIf="field.required">*</span>
+                </label>
+                <input
+                  type="tel"
+                  class="form-control"
+                  [class.is-invalid]="hasFieldError(field.key)"
+                  [placeholder]="field.placeholder || ''"
+                  [formControlName]="field.key"
+                  [disabled]="field.disabled || saving"
+                />
+                <div class="invalid-feedback" *ngIf="hasFieldError(field.key)">
+                  {{ getFieldErrorMessage(field) }}
+                </div>
+              </div>
+
+              <!-- File Input -->
+              <div class="form-group" *ngIf="field.type === 'file'">
+                <label class="form-label">
+                  {{ field.label }}
+                  <span class="text-danger" *ngIf="field.required">*</span>
+                </label>
+                <div class="file-input-container">
+                  <input
+                    #fileInput
+                    type="file"
+                    class="form-control"
+                    [class.is-invalid]="hasFieldError(field.key)"
+                    [accept]="field.accept || '*/*'"
+                    [multiple]="field.multiple || false"
+                    [disabled]="field.disabled || saving"
+                    (change)="onFileChange($event, field.key)"
+                  />
+                  
+                  <!-- File name display -->
+                  <div class="file-info mt-2" *ngIf="getFileName(field.key)">
+                    <div class="d-flex align-items-center justify-content-between bg-light p-2 rounded">
+                      <span class="file-name">
+                        <i class="fas fa-file me-2"></i>
+                        {{ getFileName(field.key) }}
+                      </span>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="clearFile(field.key, fileInput)"
+                        [disabled]="field.disabled || saving"
+                      >
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- File validation info -->
+                  <!-- <small class="form-text text-muted" *ngIf="field.validation?.maxFileSize || field.validation?.allowedFileTypes">
+                    <span *ngIf="field.validation?.maxFileSize">
+                      الحد الأقصى: {{ (field.validation.maxFileSize / (1024 * 1024)) | number:'1.0-1' }} MB
+                    </span>
+                    <span *ngIf="field.validation?.allowedFileTypes" class="ms-2">
+                      الأنواع المسموحة: {{ field.validation.allowedFileTypes.join(', ') }}
+                    </span>
+                  </small> -->
+                </div>
+                <div class="invalid-feedback" *ngIf="hasFieldError(field.key)">
+                  {{ getFieldErrorMessage(field) }}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button 
+          type="button" 
+          class="btn btn-secondary"
+          (click)="onCancel()"
+          [disabled]="saving"
+        >
+          {{ config.cancelButtonText || 'إلغاء' }}
+        </button>
+        <button 
+          type="button" 
+          class="btn"
+          [ngClass]="config.saveButtonClass || 'btn-primary'"
+          (click)="onSave()"
+          [disabled]="saving || loading"
+        >
+          <span class="spinner-border spinner-border-sm me-2" *ngIf="saving"></span>
+          {{ config.saveButtonText || 'حفظ' }}
+        </button>
       </div>
     </div>
+  </div>
+</div>

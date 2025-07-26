@@ -58,6 +58,10 @@
       color: black;
     }
 
+    ::ng-deep .form-select{
+      background-position: left .75rem center !important;
+    }
+
     .form-control::placeholder {
       color: #999999;
     }
