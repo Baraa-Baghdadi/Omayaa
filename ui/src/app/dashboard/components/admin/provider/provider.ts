@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { GetProvidersRequestDto, LockAccountRequestDto, ProviderManagementDto, ProviderManagementService, ProviderStatisticsDto } from '../../../services/provider-management-service';
-import { FormBuilder, FormGroup, FormsModule } from '@angular/forms';
+import { FormBuilder, FormsModule } from '@angular/forms';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { ModalConfig, ModalResult, SharedModalComponent } from '../../../../shared/components/shared-modal-component/shared-modal-component';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
@@ -18,7 +18,7 @@ declare var bootstrap: any;
 })
 
 export class Provider implements OnInit {
-   @ViewChild(SharedModalComponent) modalComponent!: SharedModalComponent;
+  @ViewChild(SharedModalComponent) modalComponent!: SharedModalComponent;
 
   // Subject for managing subscriptions
   private destroy$ = new Subject<void>();
@@ -179,16 +179,6 @@ export class Provider implements OnInit {
           required: true,
           validation: { minLength: 2, maxLength: 100 }
         }),
-        SharedModalService.createPasswordField('password', 'كلمة المرور', {
-          placeholder: 'أدخل كلمة المرور',
-          required: true,
-          validation: { minLength: 6 }
-        }),
-        SharedModalService.createPasswordField('confirmPassword', 'تأكيد كلمة المرور', {
-          placeholder: 'أعد إدخال كلمة المرور',
-          required: true,
-          validation: { minLength: 6 }
-        }),
         {
           key: 'mobile',
           label: 'رقم الموبايل',
@@ -247,6 +237,10 @@ export class Provider implements OnInit {
   }
 
   async onModalSave(formData: any): Promise<void> {
+  formData.password = "P@ssw0rd";
+  formData.confirmPassword = "P@ssw0rd";
+    if (this.isProcessingModal) return; // Prevent duplicate processing
+  this.isProcessingModal = true;
     try {
       this.modalService.setSaving(true);
       this.modalService.setError(null);
@@ -319,6 +313,7 @@ export class Provider implements OnInit {
     } finally {
       this.modalService.setSaving(false);
     }
+    this.isProcessingModal = false;
   }
 
   onModalCancel(): void {
