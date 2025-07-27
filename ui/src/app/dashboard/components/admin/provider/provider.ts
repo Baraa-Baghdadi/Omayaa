@@ -18,7 +18,7 @@ declare var bootstrap: any;
 })
 
 export class Provider implements OnInit {
-   @ViewChild(SharedModalComponent) modalComponent!: SharedModalComponent;
+  @ViewChild(SharedModalComponent) modalComponent!: SharedModalComponent;
 
   // Subject for managing subscriptions
   private destroy$ = new Subject<void>();
@@ -247,6 +247,8 @@ export class Provider implements OnInit {
   }
 
   async onModalSave(formData: any): Promise<void> {
+  if (this.isProcessingModal) return; // Prevent duplicate processing
+  this.isProcessingModal = true;
     try {
       this.modalService.setSaving(true);
       this.modalService.setError(null);
@@ -319,6 +321,7 @@ export class Provider implements OnInit {
     } finally {
       this.modalService.setSaving(false);
     }
+    this.isProcessingModal = false;
   }
 
   onModalCancel(): void {
