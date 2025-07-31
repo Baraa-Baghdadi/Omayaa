@@ -355,5 +355,42 @@ namespace Concord.API.Controllers.Providers
                 return StatusCode(500, "An error occurred while retrieving provider statistics.");
             }
         }
+
+        /// <summary>
+        /// Retrieves a simple list of providers for dropdown/selection purposes (Admin only).
+        /// </summary>
+        /// <param name="includeInactive">Whether to include inactive providers in the list</param>
+        /// <returns>Simple list of providers with essential information for dropdowns.</returns>
+        /// <response code="200">Returns the list of providers for dropdown successfully.</response>
+        /// <response code="401">User is not authenticated.</response>
+        /// <response code="403">User does not have admin privileges.</response>
+        /// <response code="500">Internal server error occurred.</response>
+        [HttpGet("providers/dropdown")]
+        [SwaggerOperation(
+            Summary = "Get providers list for dropdown/selection",
+            Description = "Retrieves a simple list of providers containing only essential information (ID, Name) for use in dropdown controls and selection lists. No pagination applied."
+        )]
+        [ProducesResponseType(typeof(List<ProviderDropdownDto>), 200)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<List<ProviderDropdownDto>>> GetProvidersForDropdown([FromQuery] bool includeInactive = false)
+        {
+            try
+            {
+                _logger.LogInformation("Admin user requesting providers dropdown list. Include inactive: {IncludeInactive}", includeInactive);
+
+                var providers = await _providerManagementService.GetProvidersForDropdownAsync(includeInactive);
+
+                _logger.LogInformation("Successfully retrieved {Count} providers for dropdown", providers.Count);
+
+                return Ok(providers);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving providers for dropdown");
+                return StatusCode(500, "An error occurred while retrieving providers for dropdown.");
+            }
+        }
     }
 }

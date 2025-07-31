@@ -282,6 +282,43 @@ namespace Concord.Application.Services.Providers
             }
         }
 
+        /// <summary>
+        /// Gets a simple list of all active providers for dropdown/selection purposes
+        /// Returns only essential information (ID, Name) without pagination
+        /// </summary>
+        /// <param name="includeInactive">Whether to include inactive providers in the list</param>
+        /// <returns>List of providers suitable for dropdown controls</returns>
+        public async Task<List<ProviderDropdownDto>> GetProvidersForDropdownAsync(bool includeInactive = false)
+        {
+            try
+            {
+                // Get all providers from repository
+                var providers = await _providerRepository.GetAllAsync();
+
+                var providerDropdownList = new List<ProviderDropdownDto>();
+
+                foreach (var provider in providers)
+                {
+                    var providerDropdown = new ProviderDropdownDto
+                    {
+                        ProviderId = provider.Id,
+                        ProviderName = provider.ProviderName
+                    };
+
+                    providerDropdownList.Add(providerDropdown);
+                }
+
+                // Sort by provider name for better UX
+                return providerDropdownList
+                    .OrderBy(p => p.ProviderName)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error retrieving providers for dropdown: {ex.Message}", ex);
+            }
+        }
+
         #region Private Methods
 
         /// <summary>

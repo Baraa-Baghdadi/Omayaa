@@ -50,5 +50,13 @@ namespace Concord.Application.Services.Providers
         /// </summary>
         /// <returns>Provider statistics</returns>
         Task<ProviderStatisticsDto> GetProviderStatisticsAsync();
+
+        /// <summary>
+        /// Gets a simple list of all active providers for dropdown/selection purposes
+        /// Returns only essential information (ID, Name) without pagination
+        /// </summary>
+        /// <param name="includeInactive">Whether to include inactive providers in the list</param>
+        /// <returns>List of providers suitable for dropdown controls</returns>
+        Task<List<ProviderDropdownDto>> GetProvidersForDropdownAsync(bool includeInactive = false);
     }
 }

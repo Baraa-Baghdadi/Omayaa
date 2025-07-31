@@ -209,7 +209,7 @@ export class Provider implements OnInit {
 
     this.modalService.openModal(modalConfig);
 
-        // MANUALLY trigger modal show after a short delay
+    // MANUALLY trigger modal show after a short delay
     setTimeout(() => {
       if (this.modalComponent) {
         this.modalComponent.show();
