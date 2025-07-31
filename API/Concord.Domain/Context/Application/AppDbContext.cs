@@ -1,4 +1,5 @@
 ﻿using Concord.Domain.Models.Categories;
+using Concord.Domain.Models.Orders;
 using Concord.Domain.Models.Products;
 using Concord.Domain.Models.Providers;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,8 @@ namespace Concord.Domain.Context.Application
         public DbSet<Provider> Providers { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
