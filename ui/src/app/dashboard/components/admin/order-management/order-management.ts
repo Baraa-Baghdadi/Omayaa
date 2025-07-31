@@ -22,7 +22,7 @@ declare var bootstrap: any;
 
 @Component({
   selector: 'app-order-management',
-  imports: [CommonModule, NgClass, FormsModule, NgbDropdownModule, SharedModalComponent],
+  imports: [CommonModule, NgClass, FormsModule, NgbDropdownModule],
   templateUrl: './order-management.html',
   styleUrl: './order-management.scss'
 })
