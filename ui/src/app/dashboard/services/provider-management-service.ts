@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { catchError, Observable } from 'rxjs';
 import { environment } from '../../../enviroments/environment.development';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
@@ -78,6 +78,12 @@ export interface CreateProviderDto {
   address: string;
 }
 
+// New interface for dropdown providers
+export interface ProviderDropdownDto {
+  providerId: string;
+  providerName: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -132,6 +138,25 @@ export class ProviderManagementService {
     return this.http.get<GetProvidersResponseDto>(
       this.apiUrl + 'providers',
       { params }
+    );
+  }
+
+   /**
+   * Get a simple list of providers for dropdown/selection purposes
+   * @param includeInactive Whether to include inactive providers
+   * @returns Observable of ProviderDropdownDto array
+   */
+  getProvidersForDropdown(includeInactive: boolean = false): Observable<ProviderDropdownDto[]> {
+    let params = new HttpParams();
+    
+    if (includeInactive) {
+      params = params.set('includeInactive', includeInactive.toString());
+    }
+
+    return this.http.get<ProviderDropdownDto[]>(
+      this.apiUrl + 'providers/dropdown',
+      { params }
+    ).pipe(
     );
   }
 

@@ -4,6 +4,7 @@ import { Dashboard } from './components/dashboard/dashboard';
 import { Provider } from './components/admin/provider/provider';
 import { Categories } from './components/admin/categories/categories';
 import { ProductsAdmin } from './components/admin/products-admin/products-admin';
+import { OrderManagement } from './components/admin/order-management/order-management';
 
 const routes: Routes = [
    {  
@@ -25,6 +26,10 @@ const routes: Routes = [
       {
         path: 'Products',
         component: ProductsAdmin
+      },
+      {
+        path: 'Orders',
+        component: OrderManagement
       },
     ]
   }
