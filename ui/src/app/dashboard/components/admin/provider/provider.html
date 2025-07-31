@@ -252,17 +252,7 @@
                   <i *ngIf="!actionLoading['action_' + provider.id]" class="fa fa-cog ms-2"></i>
                   الإجراءات
                 </button>
-                <div ngbDropdownMenu>
-                  <!-- View Provider -->
-                  <button 
-                    ngbDropdownItem 
-                    (click)="viewProvider(provider)"
-                    class="text-info"
-                  >
-                    <i class="fas fa-eye me-2"></i>
-                    عرض التفاصيل
-                  </button>
-                  
+                <div ngbDropdownMenu> 
                   <!-- Edit Provider -->
                   <button 
                     ngbDropdownItem 
@@ -274,17 +264,6 @@
                   </button>
                   
                   <div class="dropdown-divider"></div>
-                  
-                  <!-- Lock/Unlock Provider -->
-                  <button 
-                    *ngIf="!isProviderLocked(provider)"
-                    ngbDropdownItem 
-                    (click)="openLockModal(provider)"
-                    class="text-danger"
-                  >
-                    <i class="fas fa-lock me-2"></i>
-                    قفل الحساب
-                  </button>
                   
                   <button 
                     *ngIf="isProviderLocked(provider)"
@@ -361,51 +340,6 @@
           </li>
         </ul>
       </nav>
-    </div>
-  </div>
-</div>
-
-<!-- Lock Provider Modal (existing modal) -->
-<div class="modal fade" id="lockProviderModal" tabindex="-1" aria-labelledby="lockModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="lockModalLabel">قفل حساب المزود</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label for="lockReason" class="form-label">سبب القفل</label>
-          <textarea 
-            class="form-control" 
-            id="lockReason" 
-            rows="3" 
-            [(ngModel)]="lockReason"
-            placeholder="أدخل سبب قفل الحساب"
-          ></textarea>
-        </div>
-        <div class="mb-3">
-          <label for="lockUntilDate" class="form-label">قفل حتى تاريخ (اختياري)</label>
-          <input 
-            type="datetime-local" 
-            class="form-control" 
-            id="lockUntilDate" 
-            [(ngModel)]="lockUntilDate"
-          />
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-        <button 
-          type="button" 
-          class="btn btn-danger" 
-          (click)="lockProvider()"
-          [disabled]="lockingProvider"
-        >
-          <span *ngIf="lockingProvider" class="spinner-border spinner-border-sm me-2" role="status"></span>
-          {{ lockingProvider ? 'جاري القفل...' : 'قفل الحساب' }}
-        </button>
-      </div>
     </div>
   </div>
 </div>
