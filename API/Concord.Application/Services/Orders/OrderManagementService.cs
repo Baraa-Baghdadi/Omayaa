@@ -48,7 +48,7 @@ namespace Concord.Application.Services.Orders
                 {
                     var searchTerm = request.SearchTerm.Trim().ToLower();
                     filter = CombineWithAnd(filter, o =>
-                        o.OrderNumber.ToLower().Contains(searchTerm));
+                        o.OrderNumber.ToLower().Contains(searchTerm) || o.Provider.ProviderName.ToLower().Contains(searchTerm));
                 }
 
                 // Apply provider filter
