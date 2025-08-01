@@ -110,14 +110,14 @@
             (change)="onFilterChange()"
           >
         </div>
-      </div>
-      <div class="row mt-3">
-        <div class="col-12">
+        <div class="col-3 mt-5">
           <button class="btn btn-outline-secondary" (click)="clearFilters()" type="button">
             <i class="fas fa-refresh me-2"></i>
             مسح الفلاتر
           </button>
         </div>
+      </div>
+      <div class="col-md-3 mt-3">
       </div>
     </div>
   </div>
@@ -174,7 +174,6 @@
             <th scope="col">المبلغ الإجمالي</th>
             <th scope="col">الخصم</th>
             <th scope="col">المبلغ النهائي</th>
-            <th scope="col">الحالة</th>
             <th scope="col">الإجراءات</th>
           </tr>
         </thead>
@@ -188,10 +187,10 @@
               <span class="provider-name">{{ order.providerName }}</span>
             </td>
             <td>
-              <span class="order-date">{{ formatDate(order.orderDate) }}</span>
+              <span class="order-date">{{ order.orderDate | date:'dd/MM/yyyy' }}</span>
             </td>
             <td>
-              <span class="delivery-date" *ngIf="order.deliveryDate">{{ formatDate(order.deliveryDate) }}</span>
+              <span class="delivery-date" *ngIf="order.deliveryDate">{{ order.deliveryDate | date:'dd/MM/yyyy' }}</span>
               <span class="text-muted" *ngIf="!order.deliveryDate">غير محدد</span>
             </td>
             <td>
@@ -208,19 +207,10 @@
               <span class="final-amount fw-bold">{{ formatCurrency(order.finalAmount) }}</span>
             </td>
             <td>
-              <span 
-                class="badge"
-                [ngClass]="getOrderStatus(order).class"
-              >
-                {{ getOrderStatus(order).text }}
-              </span>
-            </td>
-            <td>
               <div class="action-buttons">
                 <!-- Edit Button -->
                 <button
                   class="btn btn-sm btn-outline-primary me-1"
-                  (click)="openEditOrderModal(order)"
                   title="تعديل الطلب"
                   type="button"
                 >
@@ -238,29 +228,6 @@
                   <i class="fas fa-spinner fa-spin" *ngIf="actionLoading['delete_' + order.id]"></i>
                   <i class="fas fa-trash" *ngIf="!actionLoading['delete_' + order.id]"></i>
                 </button>
-
-                <!-- Dropdown for more actions -->
-                <div class="btn-group ms-1" ngbDropdown>
-                  <button
-                    class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                    id="orderActions{{ order.id }}"
-                    ngbDropdownToggle
-                    type="button"
-                  >
-                    <i class="fas fa-ellipsis-v"></i>
-                  </button>
-                  <div class="dropdown-menu" ngbDropdownMenu [attr.aria-labelledby]="'orderActions' + order.id">
-                    <button class="dropdown-item" (click)="openEditOrderModal(order)">
-                      <i class="fas fa-edit me-2"></i>
-                      تعديل الطلب
-                    </button>
-                    <div class="dropdown-divider"></div>
-                    <button class="dropdown-item text-danger" (click)="deleteOrder(order)">
-                      <i class="fas fa-trash me-2"></i>
-                      حذف الطلب
-                    </button>
-                  </div>
-                </div>
               </div>
             </td>
           </tr>

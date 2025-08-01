@@ -293,106 +293,6 @@ export class OrderManagement {
   }
 
   /**
-   * Opens modal for editing an existing order
-   */
-  openEditOrderModal(order: OrderDto): void {
-    this.selectedOrder = order;
-    
-    const modalConfig: ModalConfig = {
-      title: 'تعديل الطلب',
-      subtitle: `تعديل بيانات الطلب رقم: ${order.orderNumber}`,
-      fields: [
-        {
-          key: 'discountAmount',
-          label: 'مبلغ الخصم',
-          type: 'number',
-          placeholder: '0.00',
-          required: false
-        },
-        {
-          key: 'deliveryDate',
-          label: 'تاريخ التسليم',
-          type: 'date',
-          required: false
-        },
-        {
-          key: 'notes',
-          label: 'ملاحظات',
-          type: 'textarea',
-          placeholder: 'ملاحظات إضافية حول الطلب...',
-          rows: 3,
-          required: false
-        }
-      ],
-      saveButtonText: 'حفظ التغييرات',
-      cancelButtonText: 'إلغاء',
-      size: 'lg'
-    };
-
-    const formData = {
-      discountAmount: order.discountAmount,
-      deliveryDate: order.deliveryDate ? new Date(order.deliveryDate).toISOString().split('T')[0] : '',
-      notes: order.notes || ''
-    };
-
-    const formControls: any = {};
-    modalConfig.fields.forEach(field => {
-      const validators = field.required ? [Validators.required] : [];
-      formControls[field.key] = [formData[field.key as keyof typeof formData] || '', validators];
-    });
-
-    const form = this.fb.group(formControls);
-    this.modalService.openModal(modalConfig, form);
-
-    // MANUALLY trigger modal show after a short delay
-    setTimeout(() => {
-      if (this.modalComponent) {
-        this.modalComponent.show();
-      }
-      this.isProcessingModal = false;
-    }, 200);
-  }
-
-  /**
-   * Handles modal cancel operations
-   */
-  onModalCancel(): void {
-    this.modalService.closeModal();
-    this.selectedOrder = null;
-    this.isProcessingModal = false;
-  }
-
-  /**
-   * Updates an existing order
-   */
-  private updateOrder(orderId: string, formData: any): void {
-    const updateOrderDto: UpdateOrderDto = {
-      discountAmount: formData.discountAmount || 0,
-      notes: formData.notes || '',
-      deliveryDate: formData.deliveryDate ? new Date(formData.deliveryDate) : undefined,
-      orderItems: [] // This should be populated with current order items
-    };
-
-    this.orderService.updateOrder(orderId, updateOrderDto)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (updatedOrder) => {
-          this.loadOrders();
-          this.loadStatistics();
-          this.modalService.closeModal();
-          this.selectedOrder = null;
-          this.isProcessingModal = false;
-          // this.errorPopup.show('نجح', 'تم تحديث الطلب بنجاح', 'success');
-        },
-        error: (error) => {
-          this.modalService.setError(error.message);
-          this.modalService.setSaving(false);
-          this.isProcessingModal = false;
-        }
-      });
-  }
-
-  /**
    * Deletes an order with confirmation
    */
   deleteOrder(order: OrderDto): void {
@@ -441,22 +341,5 @@ formatCurrency(amount: number): string {
       month: '2-digit',
       day: '2-digit'
     }).format(dateObj);
-  }
-
-  /**
-   * Gets display status for an order based on various conditions
-   */
-  getOrderStatus(order: OrderDto): { text: string; class: string } {
-    const now = new Date();
-    const orderDate = new Date(order.orderDate);
-    const deliveryDate = order.deliveryDate ? new Date(order.deliveryDate) : null;
-
-    if (deliveryDate && deliveryDate < now) {
-      return { text: 'مُسلّم', class: 'text-success' };
-    } else if (deliveryDate && deliveryDate > now) {
-      return { text: 'قيد التجهيز', class: 'text-warning' };
-    } else {
-      return { text: 'جديد', class: 'text-info' };
-    }
   }
 }

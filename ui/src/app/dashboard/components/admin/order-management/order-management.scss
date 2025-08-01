@@ -140,7 +140,7 @@
       }
       
       .stat-value {
-        font-size: 2.5rem;
+        font-size: 1.5rem;
         font-weight: 700;
         color: #2c3e50;
         margin-bottom: 0.5rem;
@@ -324,7 +324,7 @@
           background: linear-gradient(135deg, #2c3e50, #34495e);
           
           th {
-            color: white;
+            color: #333;
             font-weight: 600;
             padding: 1rem;
             border: none;
@@ -340,7 +340,7 @@
             
             &:hover {
               background: rgba(255, 204, 2, 0.1);
-              transform: scale(1.02);
+              // transform: scale(1.02);
             }
             
             td {
