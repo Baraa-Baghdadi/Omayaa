@@ -1,0 +1,16 @@
+﻿using Concord.Domain.Enums;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Concord.Application.DTO.AdminDashboard
+{
+    public class OrdersByStatusDto
+    {
+        public OrderStatus Status { get; set; }
+        public string StatusName { get; set; }
+        public int Count { get; set; }
+    }
+}
