@@ -1,4 +1,5 @@
-﻿using Concord.Domain.Models.Providers;
+﻿using Concord.Domain.Enums;
+using Concord.Domain.Models.Providers;
 using System.ComponentModel.DataAnnotations;
 
 namespace Concord.Domain.Models.Orders
@@ -33,6 +34,9 @@ namespace Concord.Domain.Models.Orders
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }
+
+        [Required]
+        public OrderStatus Status { get; set; } = OrderStatus.New;
 
         // Navigation property
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();

@@ -7,12 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="DTO\NewFolder\**" />
-    <EmbeddedResource Remove="DTO\NewFolder\**" />
-    <None Remove="DTO\NewFolder\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Helpers\" />
   </ItemGroup>
 

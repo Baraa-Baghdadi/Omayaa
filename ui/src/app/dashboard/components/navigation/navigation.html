@@ -13,7 +13,7 @@
     <!-- Nav Items -->
     <ul class="nav flex-column w-100 px-2">
       <li *ngIf="currentUser?.role === 'Admin'" class="nav-item c-pointer mb-1">
-        <a class="nav-link d-flex align-items-center text-light px-3 py-2">
+        <a href="/app/dashboard" onclick="window.top.location.href='/app/dashboard';" class="nav-link d-flex align-items-center text-light px-3 py-2">
           <i class="bi bi-speedometer2 fs-4 ms-2"></i>
           <span *ngIf="sidebarExpanded" class="ms-5">لوحة التحكم</span>
         </a>

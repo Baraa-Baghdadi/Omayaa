@@ -1,4 +1,5 @@
 using Concord.Application.Services.Account.Providers;
+using Concord.Application.Services.AdminDashboard;
 using Concord.Application.Services.Categories;
 using Concord.Application.Services.Mail;
 using Concord.Application.Services.Orders;
@@ -85,6 +86,7 @@ builder.Services.AddTransient<IProviderManagementService, ProviderManagementServ
 builder.Services.AddTransient<ICategoryService, CategoryService>();
 builder.Services.AddTransient<IProductManagementService, ProductManagementService>();
 builder.Services.AddTransient<IOrderManagementService, OrderManagementService>();
+builder.Services.AddTransient<IDashboardService, DashboardService>();
 
 
 // For Add Auto mapper to our project
