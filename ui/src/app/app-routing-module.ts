@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { ProviderPageComponent } from './dashboard/components/provider/provider-page-component/provider-page-component';
 
 const routes: Routes = [
     {
@@ -10,6 +11,10 @@ const routes: Routes = [
     path: '',
     loadChildren: () =>
       import('./anonymous/anonymous-module').then((m) => m.AnonymousModule),
+  },
+  {
+    path:'provider',
+    component:ProviderPageComponent
   },
 ];
 

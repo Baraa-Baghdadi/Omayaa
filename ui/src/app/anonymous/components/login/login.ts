@@ -11,6 +11,7 @@ import { Auth } from '../../../shared/services/auth';
 })
 export class Login {  
   form!:FormGroup;
+  currentUser:any;
 
   constructor(
     private router:Router,
@@ -36,7 +37,6 @@ export class Login {
         this.authService.refreshToken.next(data.refreshToken)
         this.authService.setTokenInLocal(data);
         this.getCurrentUser();
-        this.router.navigate(['/app']);
       }
     }) 
   }
@@ -59,7 +59,14 @@ export class Login {
   getCurrentUser(){
     this.authService.getCurrentUser().subscribe({
       next : (data:any) => {
-        this.authService.currentUser.next(data);
+      this.authService.currentUser.next(data);
+      console.log(data.role);
+      if (data.role !="Admin") {
+        this.router.navigate(['/provider']);
+      }
+      else{
+        // this.router.navigate(['/app']);
+      }
       },
     })
   }
@@ -73,7 +80,17 @@ export class Login {
         this.authService.refreshToken.next(data.refreshToken)
         this.authService.setTokenInLocal(data);
         this.getCurrentUser();
-        this.router.navigate(['/app']);
+        this.authService.getCurrentUser().subscribe({
+        next : (data:any) => {
+          this.authService.currentUser.next(data);
+          if (data.role !="Admin") {
+            this.router.navigate(['/provider']);
+          }
+          else{
+            this.router.navigate(['/app']);
+          }
+          },
+        })
       }
     }) 
   }
