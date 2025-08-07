@@ -1,0 +1,25 @@
+<div class="app-container">
+  <app-header-component (showCart)="showCart()"></app-header-component>
+  <div class="container main-content">
+    <!-- Page Navigation -->
+    <div class="page-nav">
+      <button 
+        class="nav-btn" 
+        [class.active]="currentPage === 'catalog'"
+        (click)="showCatalog()"
+      >
+        <i class="fas fa-th-large"></i> Product Catalog
+      </button>
+      <button 
+        class="nav-btn" 
+        [class.active]="currentPage === 'cart'"
+        (click)="showCart()"
+      >
+        <i class="fas fa-shopping-cart"></i> Shopping Cart
+      </button>
+    </div>
+
+    <app-product-catalog-component *ngIf="currentPage === 'catalog'"></app-product-catalog-component>
+    <app-cart-component *ngIf="currentPage === 'cart'" (showCatalog)="showCatalog()"></app-cart-component>
+  </div>
+</div>

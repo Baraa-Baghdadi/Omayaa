@@ -1,0 +1,57 @@
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <!-- Logo Section -->
+      <div class="logo-section">
+        <a href="#" class="logo">
+          <i class="fas fa-store"></i>
+          <div class="logo-text">
+            <span class="logo-title">Omayya</span>
+            <span class="logo-subtitle">Supplier Portal</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <!-- Cart Button -->
+        <button class="cart-icon" (click)="onCartClick()" title="View Shopping Cart">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-badge">{{ cartCount$ | async }}</span>
+        </button>
+
+        <!-- User Menu -->
+        <div class="user-menu-container">
+          <button class="user-avatar" (click)="toggleUserMenu()" title="User Menu">
+            <i class="fas fa-chevron-down dropdown-icon" [class.rotate]="showUserMenu"></i>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div class="user-dropdown" *ngIf="showUserMenu" (click)="$event.stopPropagation()">
+            <!-- User Info -->
+            <div class="user-info">
+              <div class="user-avatar-large">
+                <span class="avatar-text-large">{{ currentUser.avatar }}</span>
+              </div>
+              <div class="user-details">
+                <div class="user-name-large">{{ getDisplayName() }}</div>
+                <div class="user-company">{{ currentUser.role }}</div>
+              </div>
+            </div>
+
+            <div class="dropdown-divider"></div>
+
+            <!-- Logout Button -->
+            <button class="dropdown-item logout-item" (click)="onLogout()">
+              <i class="fas fa-sign-out-alt"></i>
+              <span><a href="/" onclick="window.top.location.href='/'">Logout</a></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Backdrop for closing menu -->
+  <div class="menu-backdrop" *ngIf="showUserMenu" (click)="closeUserMenu()"></div>
+</header>
