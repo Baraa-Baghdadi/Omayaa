@@ -1,0 +1,74 @@
+<div class="main-content">
+  <!-- Category Filter -->
+  <div class="category-filter">
+    <h5>
+      <i class="fas fa-filter"></i> Filter by Category
+    </h5>
+    <button
+      *ngFor="let category of categories"
+      class="category-btn"
+      [class.active]="currentFilter === category"
+      (click)="filterProducts(category)"
+    >
+      {{ category === 'all' ? 'All Products' : capitalizeFirst(category) }}
+    </button>
+  </div>
+
+  <!-- Products Section -->
+  <div class="products-section">
+    <h2 class="section-title">
+      <i class="fas fa-shopping-bag"></i> Available Products
+    </h2>
+    <div class="row">
+      <div class="col-md-6 col-lg-4 mb-4" *ngFor="let product of filteredProducts">
+        <div class="product-card">
+          <div class="product-badge">{{ product.badge }}</div>
+          <div class="product-image">
+            <i [class]="product.icon"></i>
+          </div>
+          <div class="product-info">
+            <h5 class="product-name">{{ product.name }}</h5>
+            <p class="product-category">{{ capitalizeFirst(product.category) }}</p>
+            <div class="product-price">${{ product.price.toFixed(2) }}</div>
+            
+            <div class="quantity-control">
+              <button class="qty-btn" (click)="changeQuantity(product.id, -1)">
+                <i class="fas fa-minus"></i>
+              </button>
+              <input
+                type="number"
+                class="qty-input"
+                [(ngModel)]="productQuantities[product.id]"
+                min="1"
+                max="99"
+              >
+              <button class="qty-btn" (click)="changeQuantity(product.id, 1)">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+
+            <div class="product-notes">
+              <label class="notes-label">
+                <i class="fas fa-sticky-note"></i> Special Notes (Optional)
+              </label>
+              <textarea
+                class="notes-textarea"
+                [(ngModel)]="productNotes[product.id]"
+                placeholder="Add any special instructions or notes for this item..."
+                maxlength="500"
+              ></textarea>
+            </div>
+
+            <button
+              class="add-to-cart-btn"
+              #addButton
+              (click)="addToCart(product.id, addButton)"
+            >
+              <i class="fas fa-cart-plus"></i> Add to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
