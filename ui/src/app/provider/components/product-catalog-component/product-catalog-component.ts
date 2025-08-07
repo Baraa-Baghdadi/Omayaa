@@ -10,26 +10,29 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
   styleUrl: './product-catalog-component.scss'
 })
 export class ProductCatalogComponent {
- products: Product[] = [
-    { id: 1, name: 'Wireless Headphones', category: 'electronics', price: 129.99, icon: 'fas fa-headphones', badge: 'New' },
-    { id: 2, name: 'Executive Office Chair', category: 'furniture', price: 299.99, icon: 'fas fa-chair', badge: 'Premium' },
-    { id: 3, name: 'Adjustable Laptop Stand', category: 'office', price: 45.99, icon: 'fas fa-laptop', badge: 'Popular' },
-    { id: 4, name: 'Professional Power Drill', category: 'tools', price: 89.99, icon: 'fas fa-tools', badge: 'Best Seller' },
-    { id: 5, name: 'Flagship Smartphone', category: 'electronics', price: 699.99, icon: 'fas fa-mobile-alt', badge: 'Premium' },
-    { id: 6, name: 'LED Desk Lamp', category: 'office', price: 34.99, icon: 'fas fa-lightbulb', badge: 'Eco-Friendly' },
-    { id: 7, name: 'Wooden Filing Cabinet', category: 'furniture', price: 159.99, icon: 'fas fa-archive', badge: 'Handcrafted' },
-    { id: 8, name: 'Professional Hammer Set', category: 'tools', price: 29.99, icon: 'fas fa-hammer', badge: 'Complete Set' },
-    { id: 9, name: 'Bluetooth Speaker', category: 'electronics', price: 79.99, icon: 'fas fa-volume-up', badge: 'Waterproof' },
-    { id: 10, name: 'Ergonomic Mouse', category: 'office', price: 24.99, icon: 'fas fa-mouse', badge: 'Comfortable' },
-    { id: 11, name: 'Modern Bookshelf', category: 'furniture', price: 189.99, icon: 'fas fa-book', badge: 'Stylish' },
-    { id: 12, name: 'Precision Screwdriver Set', category: 'tools', price: 19.99, icon: 'fas fa-screwdriver', badge: 'Precision' }
-  ];
+
+  products: Product[] = [
+  { id: 1, name: 'سماعات رأس لاسلكية', category: 'الكترونيات', price: 129.99, icon: 'fas fa-headphones', badge: 'جديد' },
+  { id: 2, name: 'كرسي مكتب تنفيذي فاخر', category: 'أثاث', price: 299.99, icon: 'fas fa-chair', badge: 'فاخر' },
+  { id: 3, name: 'كرسي مكتب تنفيذي', category: 'مكتب', price: 45.99, icon: 'fas fa-laptop', badge: 'رائج' },
+  { id: 4, name: 'مثقاب كهربائي احترافي', category: 'أدوات', price: 89.99, icon: 'fas fa-tools', badge: 'الأكثر مبيعًا' },
+  { id: 5, name: 'هاتف ذكي رائد', category: 'الكترونيات', price: 699.99, icon: 'fas fa-mobile-alt', badge: 'فاخر' },
+  { id: 6, name: 'مصباح مكتبي LED', category: 'مكتب', price: 34.99, icon: 'fas fa-lightbulb', badge: 'صديق للبيئة' },
+  { id: 7, name: 'خزانة ملفات خشبية', category: 'أثاث', price: 159.99, icon: 'fas fa-archive', badge: 'مصنوع يدويًا' },
+  { id: 8, name: 'مجموعة مطارق احترافية', category: 'أدوات', price: 29.99, icon: 'fas fa-hammer', badge: 'مجموعة كاملة' },
+  { id: 9, name: 'مكبر صوت بلوتوث', category: 'الكترونيات', price: 79.99, icon: 'fas fa-volume-up', badge: 'مضاد للماء' },
+  { id: 10, name: 'فأرة مريحة بتصميم هندسي', category: 'مكتب', price: 24.99, icon: 'fas fa-mouse', badge: 'مريحة' },
+  { id: 11, name: 'رف كتب عصري', category: 'أثاث', price: 189.99, icon: 'fas fa-book', badge: 'أنيق' },
+  { id: 12, name: 'مجموعة مفكات دقيقة', category: 'أدوات', price: 19.99, icon: 'fas fa-screwdriver', badge: 'دقة عالية' }
+];
+
+
 
   filteredProducts: Product[] = [];
   currentFilter: string = 'all';
   productQuantities: { [key: number]: number } = {};
   productNotes: { [key: number]: string } = {};
-  categories = ['all', 'electronics', 'office', 'furniture', 'tools'];
+  categories = ['الكل', 'الكترونيات', 'مكتب', 'أثاث', 'أدوات'];
 
   constructor(private cartService: CartService) {}
 
@@ -47,7 +50,7 @@ export class ProductCatalogComponent {
 
   filterProducts(category: string): void {
     this.currentFilter = category;
-    if (category === 'all') {
+    if (category === 'الكل') {
       this.filteredProducts = [...this.products];
     } else {
       this.filteredProducts = this.products.filter(product => product.category === category);

@@ -86,22 +86,13 @@ export class CartComponent implements OnInit {
     const summary = this.getCartSummary();
     
     setTimeout(() => {
-      let orderDetails = `✅ Order Successfully Confirmed!\n\n💰 Total: $${summary.total}\n📦 Items: ${summary.itemCount}\n\n📋 Order Details:\n`;
-      
-      this.cartItems.forEach((item, index) => {
-        orderDetails += `\n${index + 1}. ${item.name} (x${item.quantity}) - $${(item.price * item.quantity).toFixed(2)}`;
-        if (item.notes) {
-          orderDetails += `\n   📝 Notes: ${item.notes}`;
-        }
-      });
-      
-      orderDetails += '\n\nThank you for your premium order!\nYou will receive a confirmation email shortly.';
-      
+      let orderDetails = `✅ تم تأكيد الطلب بنجاح \n 💰 المجموع الكلي: $${summary.total}`;
+
       alert(orderDetails);
       
       // Reset cart
       this.cartService.clearCart();
-    }, 1000);
+    }, 500);
   }
 
   continueShopping(): void {

@@ -1,8 +1,8 @@
-<div class="main-content">
+<div class="main-content" dir="rtl" lang="ar">
   <!-- Category Filter -->
   <div class="category-filter">
     <h5>
-      <i class="fas fa-filter"></i> Filter by Category
+      <i class="fas fa-filter"></i> البحث حسب الفئة
     </h5>
     <button
       *ngFor="let category of categories"
@@ -17,7 +17,7 @@
   <!-- Products Section -->
   <div class="products-section">
     <h2 class="section-title">
-      <i class="fas fa-shopping-bag"></i> Available Products
+      <i class="fas fa-shopping-bag"></i> المنتجات المتوفرة
     </h2>
     <div class="row">
       <div class="col-md-6 col-lg-4 mb-4" *ngFor="let product of filteredProducts">
@@ -49,12 +49,12 @@
 
             <div class="product-notes">
               <label class="notes-label">
-                <i class="fas fa-sticky-note"></i> Special Notes (Optional)
+                <i class="fas fa-sticky-note"></i> ملاحظات خاصة (اختياري)
               </label>
               <textarea
                 class="notes-textarea"
                 [(ngModel)]="productNotes[product.id]"
-                placeholder="Add any special instructions or notes for this item..."
+                placeholder="أضف أي تعليمات خاصة أو ملاحظات لهذا المنتج..."
                 maxlength="500"
               ></textarea>
             </div>
@@ -64,7 +64,7 @@
               #addButton
               (click)="addToCart(product.id, addButton)"
             >
-              <i class="fas fa-cart-plus"></i> Add to Cart
+              <i class="fas fa-cart-plus"></i> أضف إلى السلة
             </button>
           </div>
         </div>
