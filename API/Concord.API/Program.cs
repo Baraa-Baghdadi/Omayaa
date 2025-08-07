@@ -198,6 +198,7 @@ if (app.Environment.IsDevelopment())
 else
 {
     // Enable Swagger UI (at /swagger endpoint):
+    app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Omayya Class API");
