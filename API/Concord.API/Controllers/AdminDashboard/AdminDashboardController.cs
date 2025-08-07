@@ -6,7 +6,7 @@ namespace Concord.API.Controllers.AdminDashboard
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin")] // Role-based authorization
+    [Authorize(Roles = "Admin")]
     public class AdminDashboardController : ControllerBase
     {
         private readonly IDashboardService _dashboardService;

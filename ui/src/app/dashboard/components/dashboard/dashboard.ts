@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { Navigation } from '../navigation/navigation';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { RightSideNav } from '../right-side-nav/right-side-nav';
+import { Auth } from '../../../shared/services/auth';
 
 @Component({
   selector: 'app-dashboard',
@@ -11,5 +12,14 @@ import { RightSideNav } from '../right-side-nav/right-side-nav';
   styleUrl: './dashboard.scss'
 })
 export class Dashboard {
-
+  constructor(private authService:Auth,private router:Router) { 
+    this.authService.getCurrentUser().subscribe({
+      next : (data:any) => {
+        this.authService.currentUser.next(data);
+        if (data.role !="Admin") {
+          this.router.navigate(['/provider']);
+        }
+        },
+      })
+   }
 }

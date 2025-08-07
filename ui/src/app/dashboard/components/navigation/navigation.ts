@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { RightSideNav } from '../right-side-nav/right-side-nav';
 import { Subscription } from 'rxjs';
 import { Auth } from '../../../shared/services/auth';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-navigation',

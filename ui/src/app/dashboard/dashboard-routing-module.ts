@@ -6,6 +6,7 @@ import { Categories } from './components/admin/categories/categories';
 import { ProductsAdmin } from './components/admin/products-admin/products-admin';
 import { OrderManagement } from './components/admin/order-management/order-management';
 import { DashboardAdminComponent } from './components/admin/dashboard-admin-component/dashboard-admin-component';
+import { ProviderPageComponent } from './components/provider/provider-page-component/provider-page-component';
 
 const routes: Routes = [
    {  
@@ -37,8 +38,7 @@ const routes: Routes = [
         component: OrderManagement
       },
     ]
-  }
-
+  },
 ];
 
 @NgModule({

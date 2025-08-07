@@ -1,1 +1,221 @@
-<p>dashboard-admin-component works!</p>
+<!-- Admin Dashboard Component -->
+  <div class="admin-dashboard" dir="rtl" lang="ar">
+    <!-- Hero Header -->
+    <div class="hero-section">
+      <div class="hero-content">
+        <div class="hero-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="hero-text">
+          <h1 class="hero-title">لوحة التحكم الإدارية</h1>
+          <p class="hero-subtitle">تحليلات شاملة ومتقدمة</p>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <button class="btn modern-refresh-btn" (click)="refreshDashboard()" [disabled]="loading">
+          <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i>
+          تحديث البيانات
+        </button>
+      </div>
+    </div>
+
+    <!-- Dashboard Cards -->
+    <div class="cards-section" *ngIf="dashboardCards">
+      <div class="row g-4">
+        <div class="col-xl-3 col-lg-6 col-md-6">
+          <div class="dashboard-card total-orders">
+            <div class="card-icon">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="card-content">
+              <h3 class="card-value">{{ dashboardCards.totalOrders | number }}</h3>
+              <p class="card-label">إجمالي الطلبات</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-6 col-md-6">
+          <div class="dashboard-card total-revenue">
+            <div class="card-icon">
+              <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="card-content">
+              <h3 class="card-value">{{ dashboardCards.totalRevenue | currency:'USD':'symbol':'1.0-0' }}</h3>
+              <p class="card-label">إجمالي الإيرادات</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-6 col-md-6">
+          <div class="dashboard-card total-providers">
+            <div class="card-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="card-content">
+              <h3 class="card-value">{{ dashboardCards.numberOfProviders | number }}</h3>
+              <p class="card-label">عدد المزودين</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-6 col-md-6">
+          <div class="dashboard-card total-products">
+            <div class="card-icon">
+              <i class="fas fa-box"></i>
+            </div>
+            <div class="card-content">
+              <h3 class="card-value">{{ dashboardCards.numberOfProducts | number }}</h3>
+              <p class="card-label">عدد المنتجات</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Cards -->
+    <div class="analytics-section" *ngIf="orderAnalytics">
+      <div class="row g-4">
+        <div class="col-lg-4 col-md-6">
+          <div class="analytics-card daily">
+            <div class="analytics-header">
+              <h4>إحصائيات اليوم</h4>
+              <i class="fas fa-calendar-day"></i>
+            </div>
+            <div class="analytics-body">
+              <div class="metric">
+                <span class="metric-value">{{ orderAnalytics.totalOrdersDaily }}</span>
+                <span class="metric-label">طلبات جديدة</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value">{{ orderAnalytics.totalRevenueDaily | currency:'USD':'symbol':'1.0-0' }}</span>
+                <span class="metric-label">إيرادات اليوم</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6">
+          <div class="analytics-card monthly">
+            <div class="analytics-header">
+              <h4>إحصائيات الشهر</h4>
+              <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="analytics-body">
+              <div class="metric">
+                <span class="metric-value">{{ orderAnalytics.totalOrdersMonthly }}</span>
+                <span class="metric-label">طلبات الشهر</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value">{{ orderAnalytics.totalRevenueMonthly | currency:'USD':'symbol':'1.0-0' }}</span>
+                <span class="metric-label">إيرادات الشهر</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-12">
+          <div class="analytics-card average">
+            <div class="analytics-header">
+              <h4>المتوسطات</h4>
+              <i class="fas fa-chart-bar"></i>
+            </div>
+            <div class="analytics-body">
+              <div class="metric">
+                <span class="metric-value">{{ orderAnalytics.averageOrderValue | currency:'USD':'symbol':'1.0-0' }}</span>
+                <span class="metric-label">متوسط قيمة الطلب</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value">{{ orderAnalytics.averagePreparationTimeHours | number:'1.1-1' }}ساعة</span>
+                <span class="metric-label">متوسط وقت التحضير</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+      <div class="row g-4">
+      </div>
+    </div>
+
+    <!-- Data Tables Section -->
+    <div class="tables-section">
+      <div class="row g-4">
+        <!-- Latest Orders -->
+        <div class="col-lg-8">
+          <div class="table-card">
+            <div class="table-header">
+              <h4>أحدث الطلبات</h4>
+              <span class="badge bg-primary">{{ latestOrders.length || 0 }} طلب</span>
+            </div>
+            <div class="table-body">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>رقم الطلب</th>
+                      <th>المزود</th>
+                      <th>المبلغ</th>
+                      <th>الحالة</th>
+                      <th>التاريخ</th>
+                      <th>العناصر</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let order of latestOrders">
+                      <td>
+                        <span class="order-number">{{ order.orderNumber }}</span>
+                      </td>
+                      <td>
+                        <span class="provider-name">{{ order.providerName }}</span>
+                      </td>
+                      <td>
+                        <span class="amount">{{ order.finalAmount | currency:'USD':'symbol':'1.0-0' }}</span>
+                      </td>
+                      <td>
+                        <span [class]="getOrderStatusClass(order.status)">
+                          {{ getOrderStatusText(order.status) }}
+                        </span>
+                      </td>
+                      <td>
+                        <span class="order-date">{{ order.orderDate | date:'short':'ar-SA' }}</span>
+                      </td>
+                      <td>
+                        <span class="item-count badge bg-secondary">{{ order.itemCount }}</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Best Selling Products Table -->
+        <div class="col-lg-4">
+          <div class="table-card">
+            <div class="table-header">
+              <h4>أفضل المنتجات</h4>
+            </div>
+            <div class="table-body">
+              <div class="product-list">
+                <div class="product-item" *ngFor="let product of bestSellingProducts; let i = index">
+                  <div class="product-rank">{{ i + 1 }}</div>
+                  <div class="product-info">
+                    <h6>{{ product.productName }}</h6>
+                    <p>{{ product.categoryName }}</p>
+                  </div>
+                  <div class="product-stats">
+                    <span class="sold-count">{{ product.totalSold }}</span>
+                    <span class="revenue">{{ product.totalRevenue | currency:'USD':'symbol':'1.0-0' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
