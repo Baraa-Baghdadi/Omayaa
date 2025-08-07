@@ -1,5 +1,22 @@
-<div class="app-container">
-  <app-header-component (showCart)="showCart()"></app-header-component>
+<div class="app-container" [attr.data-theme]="currentTheme">
+  <!-- Theme Toggle Button -->
+  <!-- <div class="theme-toggle" (click)="toggleTheme()" [title]="currentTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+    <i class="fas" [class.fa-sun]="currentTheme === 'dark'" [class.fa-moon]="currentTheme === 'light'"></i>
+  </div> -->
+
+  <!-- Theme Notification -->
+  <div class="theme-notification" [class.show]="showThemeNotification" *ngIf="showThemeNotification">
+    <div class="notification-content">
+      <i class="fas" [class.fa-moon]="currentTheme === 'dark'" [class.fa-sun]="currentTheme === 'light'"></i>
+      <span>{{ themeNotificationMessage }}</span>
+    </div>
+  </div>
+
+  <app-header-component 
+    (showCart)="showCart()" 
+  >
+  </app-header-component>
+  
   <div class="container main-content">
     <!-- Page Navigation -->
     <div class="page-nav">
