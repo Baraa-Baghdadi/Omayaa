@@ -1,15 +1,15 @@
-<div class="cart-section">
+<div class="cart-section" dir="rtl" lang="ar">
   <h2 class="section-title">
-    <i class="fas fa-shopping-cart"></i> Your Shopping Cart
+    <i class="fas fa-shopping-cart"></i> سلة التسوق الخاصة بك
   </h2>
 
   <!-- Empty State -->
   <div class="empty-state" *ngIf="cartItems.length === 0">
     <i class="fas fa-shopping-cart"></i>
-    <h3>Your cart is empty</h3>
-    <p>Add some premium products to get started!</p>
+    <h3>سلة التسوق الخاصة بك فارغة</h3>
+    <p>أضف بعض المنتجات المميزة للبدء!</p>
     <button class="nav-btn" (click)="continueShopping()">
-      <i class="fas fa-arrow-left"></i> Continue Shopping
+      <i class="fas fa-arrow-left"></i> متابعة التسوق
     </button>
   </div>
 
@@ -22,13 +22,13 @@
       <div class="cart-item-info">
         <div class="cart-item-name">{{ item.name }}</div>
         <div class="cart-item-category">{{ capitalizeFirst(item.category) }}</div>
-        <div class="cart-item-price">${{ item.price.toFixed(2) }} each</div>
+        <div class="cart-item-price">${{ item.price.toFixed(2) }} لكل قطعة</div>
         
         <div class="cart-item-notes" *ngIf="item.notes">
           <div class="cart-notes-label">
-            <i class="fas fa-sticky-note"></i> Notes:
+            <i class="fas fa-sticky-note"></i> ملاجظات:
             <button class="edit-notes-btn" (click)="editItemNotes(i)">
-              <i class="fas fa-edit"></i> Edit
+              <i class="fas fa-edit"></i> تعديل
             </button>
           </div>
           <div class="cart-notes-text">{{ item.notes }}</div>
@@ -36,7 +36,7 @@
         
         <div style="margin-top: 0.5rem;" *ngIf="!item.notes">
           <button class="edit-notes-btn" (click)="editItemNotes(i)">
-            <i class="fas fa-plus"></i> Add Notes
+            <i class="fas fa-plus"></i> إضافة ملاحظات
           </button>
         </div>
       </div>
@@ -60,29 +60,29 @@
     <!-- Cart Summary -->
     <div class="cart-summary">
       <div class="summary-row">
-        <span>Subtotal:</span>
+        <span>المجموع:</span>
         <span>${{ getCartSummary().subtotal }}</span>
       </div>
       <div class="summary-row">
-        <span>Tax (10%):</span>
+        <span>الضريبة (10٪):</span>
         <span>${{ getCartSummary().tax }}</span>
       </div>
       <div class="summary-row">
-        <span>Total:</span>
+        <span>الإجمالي:</span>
         <span>${{ getCartSummary().total }}</span>
       </div>
       <button class="confirm-order-btn" (click)="confirmOrder()">
-        <i class="fas fa-check"></i> Confirm Order
+        <i class="fas fa-check"></i> تأكيد الطلب
       </button>
     </div>
   </div>
 </div>
 
 <!-- Notes Edit Modal -->
-<div class="notes-edit-modal" *ngIf="showNotesModal" (click)="onModalBackdropClick($event)" (keydown)="onKeydown($event)">
+<div class="notes-edit-modal" *ngIf="showNotesModal" (click)="onModalBackdropClick($event)" (keydown)="onKeydown($event)" dir="rtl" lang="ar">
   <div class="notes-edit-content">
     <div class="notes-edit-header">
-      <h4 class="notes-edit-title">Edit Notes: {{ editingItemName }}</h4>
+      <h4 class="notes-edit-title">تعديل الملاحظات</h4>
       <button class="close-modal-btn" (click)="closeNotesModal()">
         <i class="fas fa-times"></i>
       </button>
@@ -90,16 +90,16 @@
     <textarea
       class="notes-edit-textarea"
       [(ngModel)]="editNotesText"
-      placeholder="Add any special instructions or notes for this item..."
+      placeholder="أضف أي تعليمات خاصة أو ملاحظات لهذا المنتج..."
       maxlength="500"
       #notesTextarea
     ></textarea>
     <div class="notes-edit-actions">
       <button class="cancel-notes-btn" (click)="closeNotesModal()">
-        <i class="fas fa-times"></i> Cancel
+        <i class="fas fa-times"></i> الغاء
       </button>
       <button class="save-notes-btn" (click)="saveNotes()">
-        <i class="fas fa-save"></i> Save Notes
+        <i class="fas fa-save"></i> حفظ
       </button>
     </div>
   </div>

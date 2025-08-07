@@ -19,20 +19,20 @@
   
   <div class="container main-content">
     <!-- Page Navigation -->
-    <div class="page-nav">
+    <div class="page-nav" dir="rtl" lang="ar">
       <button 
         class="nav-btn" 
         [class.active]="currentPage === 'catalog'"
         (click)="showCatalog()"
       >
-        <i class="fas fa-th-large"></i> Product Catalog
+        <i class="fas fa-th-large"></i> كتالوج المنتجات
       </button>
       <button 
         class="nav-btn" 
         [class.active]="currentPage === 'cart'"
         (click)="showCart()"
       >
-        <i class="fas fa-shopping-cart"></i> Shopping Cart
+        <i class="fas fa-shopping-cart"></i> سلة التسوّق
       </button>
     </div>
 
