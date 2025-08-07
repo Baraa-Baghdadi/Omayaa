@@ -38,25 +38,14 @@ export class HeaderComponent implements OnInit {
   }
 
   onLogout(): void {
-    // Add confirmation dialog
-    if (confirm('Are you sure you want to logout?')) {
-      this.logout.emit();
       this.closeUserMenu();
       this.authService.logOut();
-    }
   }
 
   onProfile(): void {
-    // Handle profile click
-    console.log('Profile clicked');
     this.closeUserMenu();
   }
 
-  onSettings(): void {
-    // Handle settings click
-    console.log('Settings clicked');
-    this.closeUserMenu();
-  }
 
     // Helper method to get display name
   getDisplayName(): string {

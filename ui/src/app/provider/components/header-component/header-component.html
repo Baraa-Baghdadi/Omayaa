@@ -32,11 +32,11 @@
                             <!-- User Info -->
                             <div class="user-info">
                                 <div class="user-avatar-large">
-                                    <span class="avatar-text-large">{{ currentUser.avatar }}</span>
+                                    <!-- <span class="avatar-text-large">{{ currentUser.avatar }}</span> -->
                                 </div>
                                 <div class="user-details">
                                     <div class="user-name-large">{{ getDisplayName() }}</div>
-                                    <div class="user-company">{{ currentUser.role }}</div>
+                                    <div *ngIf="currentUser.role == 'Provider'" class="user-company">نقطة بيع</div>
                                 </div>
                             </div>
 
