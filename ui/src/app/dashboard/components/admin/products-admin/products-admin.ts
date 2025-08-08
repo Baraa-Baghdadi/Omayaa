@@ -7,7 +7,7 @@ import { SharedModalComponent, ModalConfig } from '../../../../shared/components
 import { SharedModalService } from '../../../../shared/services/shared-modal-service';
 import { ErrorPopup } from '../../../../shared/services/error-popup';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
-import { environment } from '../../../../../enviroments/environment.development';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-products-admin',

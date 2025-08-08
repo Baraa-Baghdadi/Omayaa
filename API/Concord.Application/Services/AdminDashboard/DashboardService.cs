@@ -78,7 +78,16 @@ namespace Concord.Application.Services.AdminDashboard
                 .Where(o => o.OrderDate >= thisMonth)
                 .Sum(o => o.FinalAmount);
 
-            var avgOrderValue = completedOrders.Average(o => o.FinalAmount);
+            decimal avgOrderValue = 0;
+
+            if (completedOrders.Count > 0)
+            {
+                avgOrderValue = completedOrders.Average(o => o.FinalAmount);
+            }
+            else
+            {
+                avgOrderValue = 0;
+            }
 
             return new OrderAnalyticsDto
             {
