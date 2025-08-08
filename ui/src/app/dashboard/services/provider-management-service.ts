@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { catchError, Observable } from 'rxjs';
-import { environment } from '../../../enviroments/environment.development';
+import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
 export interface ProviderManagementDto {

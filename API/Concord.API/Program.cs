@@ -146,13 +146,16 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Enable Cors For FrontEnd:
-builder.Services.AddCors(c =>
+// Add CORS policy
+builder.Services.AddCors(options =>
 {
-    c.AddPolicy("AllowOrigin", options => options.WithOrigins("http://localhost:4200")
-            .AllowCredentials()
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-    );
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy
+            .AllowAnyOrigin() // allows all origins
+            .AllowAnyMethod() // allows GET, POST, PUT, DELETE, etc.
+            .AllowAnyHeader(); // allows all headers
+    });
 });
 
 // add signalR:
@@ -205,7 +208,8 @@ else
     });
 }
 
-app.UseCors("AllowOrigin");
+// Enable CORS
+app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 
