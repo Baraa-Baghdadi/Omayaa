@@ -77,6 +77,15 @@ namespace Concord.Application.Services.Categories
         }
 
         /// <summary>
+        /// Gets all categories
+        /// </summary>
+        public async Task<List<Category>> GetAllCategoriesAsync()
+        {
+            var categories = await _categoryRepository.GetAllAsync();
+            return  categories.ToList();
+        }
+
+        /// <summary>
         /// Gets a specific category by ID
         /// </summary>
         public async Task<CategoryDto?> GetCategoryByIdAsync(Guid categoryId)

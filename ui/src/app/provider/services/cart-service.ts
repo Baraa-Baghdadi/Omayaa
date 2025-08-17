@@ -1,35 +1,14 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-// models/product.model.ts
-export interface Product {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-  icon: string;
-  badge: string;
-}
-
-// models/cart-item.model.ts
-export interface CartItem {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-  icon: string;
-  badge: string;
-  quantity: number;
-  notes: string;
-  cartItemId: string;
-}
 
 @Injectable({
   providedIn: 'root'
 })
+
 export class CartService {
-   private cartItems: CartItem[] = [];
-  private cartSubject = new BehaviorSubject<CartItem[]>([]);
+   private cartItems: any[] = [];
+  private cartSubject = new BehaviorSubject<any[]>([]);
   public cart$ = this.cartSubject.asObservable();
 
   private cartCountSubject = new BehaviorSubject<number>(0);
@@ -37,10 +16,10 @@ export class CartService {
 
   constructor() {}
 
-  addToCart(product: Product, quantity: number, notes: string): void {
+  addToCart(product: any, quantity: number, notes: string): void {
     const cartItemId = `${product.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    const cartItem: CartItem = {
+    const cartItem: any = {
       ...product,
       quantity,
       notes,
@@ -51,7 +30,7 @@ export class CartService {
     this.updateCart();
   }
 
-  updateQuantity(itemIndex: number, change: number): void {
+  updateQuantity(itemIndex: any, change: any): void {
     if (itemIndex < 0 || itemIndex >= this.cartItems.length) return;
     
     const item = this.cartItems[itemIndex];
@@ -64,21 +43,21 @@ export class CartService {
     }
   }
 
-  removeItem(itemIndex: number): void {
+  removeItem(itemIndex: any): void {
     if (itemIndex < 0 || itemIndex >= this.cartItems.length) return;
     
     this.cartItems.splice(itemIndex, 1);
     this.updateCart();
   }
 
-  updateNotes(itemIndex: number, notes: string): void {
+  updateNotes(itemIndex: any, notes: string): void {
     if (itemIndex < 0 || itemIndex >= this.cartItems.length) return;
     
     this.cartItems[itemIndex].notes = notes;
     this.updateCart();
   }
 
-  getCartItems(): CartItem[] {
+  getCartItems(): any[] {
     return [...this.cartItems];
   }
 

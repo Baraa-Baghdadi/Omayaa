@@ -17,11 +17,11 @@
   <div *ngIf="cartItems.length > 0">
     <div class="cart-item" *ngFor="let item of cartItems; let i = index">
       <div class="cart-item-image">
-        <i [class]="item.icon"></i>
+         <img class="img-fluid" [src]="baseUrl + item?.imageUrl" width="50" height="50" alt="Loading">
       </div>
       <div class="cart-item-info">
         <div class="cart-item-name">{{ item.name }}</div>
-        <div class="cart-item-category">{{ capitalizeFirst(item.category) }}</div>
+        <div class="cart-item-category">{{ capitalizeFirst(item.categoryName) }}</div>
         <div class="cart-item-price">${{ item.price.toFixed(2) }} لكل قطعة</div>
         
         <div class="cart-item-notes" *ngIf="item.notes">

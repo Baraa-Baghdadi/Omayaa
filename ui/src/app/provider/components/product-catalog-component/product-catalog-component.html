@@ -4,14 +4,24 @@
     <h5>
       <i class="fas fa-filter"></i> البحث حسب الفئة
     </h5>
-    <button
-      *ngFor="let category of categories"
-      class="category-btn"
-      [class.active]="currentFilter === category"
-      (click)="filterProducts(category)"
-    >
-      {{ category === 'all' ? 'All Products' : capitalizeFirst(category) }}
-    </button>
+    
+    <!-- Loading spinner for categories -->
+    <div *ngIf="isLoadingCategories" class="loading-spinner">
+      <i class="fas fa-spinner fa-spin"></i> جاري تحميل الفئات...
+    </div>
+    
+    <!-- Category buttons -->
+    <div *ngIf="!isLoadingCategories">
+      <button
+        *ngFor="let category of categories"
+        class="category-btn"
+        [class.active]="currentFilter === category.name"
+        (click)="filterProducts(category.name)"
+        [disabled]="isLoadingProducts"
+      >
+        {{ category.name }}
+      </button>
+    </div>
   </div>
 
   <!-- Products Section -->
@@ -19,18 +29,40 @@
     <h2 class="section-title">
       <i class="fas fa-shopping-bag"></i> المنتجات المتوفرة
     </h2>
-    <div class="row">
+    
+    <!-- Loading spinner for products -->
+    <div *ngIf="isLoadingProducts" class="loading-container">
+      <div class="loading-spinner">
+        <i class="fas fa-spinner fa-spin fa-2x"></i>
+        <p>جاري تحميل المنتجات...</p>
+      </div>
+    </div>
+    
+    <!-- No products message -->
+    <div *ngIf="!isLoadingProducts && filteredProducts.length === 0" class="no-products">
+      <div class="text-center py-4">
+        <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">لا توجد منتجات متاحة</h4>
+        <p class="text-muted">لم يتم العثور على منتجات في هذه الفئة.</p>
+      </div>
+    </div>
+    
+    <!-- Products Grid -->
+    <div class="row" *ngIf="!isLoadingProducts && filteredProducts.length > 0">
       <div class="col-md-6 col-lg-4 mb-4" *ngFor="let product of filteredProducts">
         <div class="product-card">
-          <div class="product-badge">{{ product.badge }}</div>
+          <div class="product-badge" *ngIf="product.newPrice">${{ product.newPrice.toFixed(2) }}</div>
           <div class="product-image">
-            <i [class]="product.icon"></i>
+            <!-- <i [class]="product.icon"></i> -->
+             <img class="img-fluid mx-auto d-block" [src]="baseUrl + product?.imageUrl" alt="Loading">
           </div>
           <div class="product-info">
             <h5 class="product-name">{{ product.name }}</h5>
-            <p class="product-category">{{ capitalizeFirst(product.category) }}</p>
-            <div class="product-price">${{ product.price.toFixed(2) }}</div>
-            
+            <p class="product-category">{{ capitalizeFirst(product.categoryName) }}</p>
+            <div [ngClass]="product.newPrice ? 'text-decoration-line-through' : ''">
+              <p class="product-price">${{ product.price.toFixed(2) }}</p>
+            </div>
+                         
             <div class="quantity-control">
               <button class="qty-btn" (click)="changeQuantity(product.id, -1)">
                 <i class="fas fa-minus"></i>
@@ -63,6 +95,7 @@
               class="add-to-cart-btn"
               #addButton
               (click)="addToCart(product.id, addButton)"
+              [disabled]="isLoadingProducts"
             >
               <i class="fas fa-cart-plus"></i> أضف إلى السلة
             </button>

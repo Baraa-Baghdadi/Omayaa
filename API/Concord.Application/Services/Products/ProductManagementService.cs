@@ -152,6 +152,29 @@ namespace Concord.Application.Services.Products
         }
 
         /// <summary>
+        /// Gets all products for special category ID
+        /// </summary>
+        public async Task<List<ProductDto>> GetAllProductsAsync(Guid categoryId)
+        {
+            var products = await _productRepository.GetAllAsync("Category",x => x.CategoryId == categoryId);
+            // Map to DTOs
+            var productDtos = products.Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Price = p.Price,
+                NewPrice = p.NewPrice,
+                ImageUrl = p.ImageUrl,
+                IsActive = p.IsActive,
+                CategoryId = p.CategoryId,
+                CategoryName = p.Category?.Name ?? "Unknown",
+                CreatedAt = p.CreatedAt
+            }).ToList();
+
+            return productDtos;
+        }
+
+        /// <summary>
         /// Gets a specific product by ID
         /// </summary>
         public async Task<ProductDto?> GetProductByIdAsync(Guid productId)

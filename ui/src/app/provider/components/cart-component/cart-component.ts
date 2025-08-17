@@ -1,8 +1,9 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { Observable } from 'rxjs';
-import { CartItem, CartService } from '../../services/cart-service';
+import { CartService } from '../../services/cart-service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-cart-component',
@@ -13,12 +14,15 @@ import { FormsModule } from '@angular/forms';
 export class CartComponent implements OnInit {
   @Output() showCatalog = new EventEmitter<void>();
 
-  cartItems$: Observable<CartItem[]>;
-  cartItems: CartItem[] = [];
+  cartItems$: Observable<any[]>;
+  cartItems: any[] = [];
   showNotesModal = false;
   editingNotes: number | null = null;
   editNotesText = '';
   editingItemName = '';
+
+  public readonly baseUrl  = environment.API_URL;
+  
 
   constructor(private cartService: CartService) {
     this.cartItems$ = this.cartService.cart$;
@@ -84,6 +88,9 @@ export class CartComponent implements OnInit {
     if (this.cartItems.length === 0) return;
 
     const summary = this.getCartSummary();
+
+    console.log("this.cartItems ",this.cartItems );
+    
     
     setTimeout(() => {
       let orderDetails = `✅ تم تأكيد الطلب بنجاح \n 💰 المجموع الكلي: $${summary.total}`;
