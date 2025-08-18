@@ -19,7 +19,7 @@
   
   <div class="container main-content">
     <!-- Page Navigation -->
-    <div class="page-nav" dir="rtl" lang="ar">
+    <!-- <div class="page-nav" dir="rtl" lang="ar">
       <button 
         class="nav-btn" 
         [class.active]="currentPage === 'catalog'"
@@ -34,7 +34,7 @@
       >
         <i class="fas fa-shopping-cart"></i> سلة التسوّق
       </button>
-    </div>
+    </div> -->
 
     <app-product-catalog-component *ngIf="currentPage === 'catalog'"></app-product-catalog-component>
     <app-cart-component *ngIf="currentPage === 'cart'" (showCatalog)="showCatalog()"></app-cart-component>

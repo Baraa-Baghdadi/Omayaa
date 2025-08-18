@@ -118,7 +118,7 @@ export class DashboardAdminService {
   /**
    * Get best selling products
    */
-  getBestSellingProducts(take: number = 10): Observable<BestSellingProductDto[]> {
+  getBestSellingProducts(take: number = 3): Observable<BestSellingProductDto[]> {
     const params = new HttpParams().set('take', take.toString());
     return this.http.get<BestSellingProductDto[]>(`${this.apiUrl}/analytics/best-selling-products`, { params })
       .pipe(catchError(this.handleError));

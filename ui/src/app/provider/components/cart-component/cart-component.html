@@ -22,7 +22,7 @@
       <div class="cart-item-info">
         <div class="cart-item-name">{{ item.name }}</div>
         <div class="cart-item-category">{{ capitalizeFirst(item.categoryName) }}</div>
-        <div class="cart-item-price">${{ item.price.toFixed(2) }} لكل قطعة</div>
+        <div class="cart-item-price">{{ formatCurrency(item.price) }} لكل قطعة</div>
         
         <div class="cart-item-notes" *ngIf="item.notes">
           <div class="cart-notes-label">

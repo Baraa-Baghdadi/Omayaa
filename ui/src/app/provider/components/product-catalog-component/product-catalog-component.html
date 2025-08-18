@@ -51,7 +51,7 @@
     <div class="row" *ngIf="!isLoadingProducts && filteredProducts.length > 0">
       <div class="col-md-6 col-lg-4 mb-4" *ngFor="let product of filteredProducts">
         <div class="product-card">
-          <div class="product-badge" *ngIf="product.newPrice">${{ product.newPrice.toFixed(2) }}</div>
+          <div class="product-badge" *ngIf="product.newPrice">{{ formatCurrency(product.newPrice) }}</div>
           <div class="product-image">
             <!-- <i [class]="product.icon"></i> -->
              <img class="img-fluid mx-auto d-block" [src]="baseUrl + product?.imageUrl" alt="Loading">
@@ -59,8 +59,8 @@
           <div class="product-info">
             <h5 class="product-name">{{ product.name }}</h5>
             <p class="product-category">{{ capitalizeFirst(product.categoryName) }}</p>
-            <div [ngClass]="product.newPrice ? 'text-decoration-line-through' : ''">
-              <p class="product-price">${{ product.price.toFixed(2) }}</p>
+            <div [ngClass]="product.newPrice ? 'line-through' : ''">
+              <p class="product-price">{{ formatCurrency(product.price) }}</p>
             </div>
                          
             <div class="quantity-control">

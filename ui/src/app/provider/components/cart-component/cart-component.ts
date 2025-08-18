@@ -4,6 +4,7 @@ import { CartService } from '../../services/cart-service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../../../environments/environment';
+import { Auth } from '../../../shared/services/auth';
 
 @Component({
   selector: 'app-cart-component',
@@ -24,7 +25,7 @@ export class CartComponent implements OnInit {
   public readonly baseUrl  = environment.API_URL;
   
 
-  constructor(private cartService: CartService) {
+  constructor(private cartService: CartService,private authService:Auth) {
     this.cartItems$ = this.cartService.cart$;
   }
 
@@ -89,14 +90,19 @@ export class CartComponent implements OnInit {
 
     const summary = this.getCartSummary();
 
-    console.log("this.cartItems ",this.cartItems );
+    var requestBody = {
+      deliveryDate: null,
+      orderItems: this.cartItems
+    };
+    
+    this.cartService.submitOrder(requestBody).subscribe({
+      next : (data => {})
+    })
     
     
     setTimeout(() => {
       let orderDetails = `✅ تم تأكيد الطلب بنجاح \n 💰 المجموع الكلي: $${summary.total}`;
-
       alert(orderDetails);
-      
       // Reset cart
       this.cartService.clearCart();
     }, 500);
@@ -109,4 +115,17 @@ export class CartComponent implements OnInit {
   capitalizeFirst(text: string): string {
     return text.charAt(0).toUpperCase() + text.slice(1);
   }
+
+    /**
+   * Formats currency for display
+   */
+    formatCurrency(amount: number): string {
+        return new Intl.NumberFormat('ar-SY', {
+          style: 'currency',
+          currency: 'SYP',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2
+        }).format(amount);
+    }
+
 }

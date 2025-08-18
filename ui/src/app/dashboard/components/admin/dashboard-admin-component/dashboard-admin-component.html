@@ -40,7 +40,7 @@
               <i class="fas fa-dollar-sign"></i>
             </div>
             <div class="card-content">
-              <h3 class="card-value">{{ dashboardCards.totalRevenue | currency:'USD':'symbol':'1.0-0' }}</h3>
+              <h3 class="card-value">{{formatCurrency(dashboardCards.totalRevenue)}}</h3>
               <p class="card-label">إجمالي الإيرادات</p>
             </div>
           </div>
@@ -87,7 +87,7 @@
                 <span class="metric-label">طلبات جديدة</span>
               </div>
               <div class="metric">
-                <span class="metric-value">{{ orderAnalytics.totalRevenueDaily | currency:'USD':'symbol':'1.0-0' }}</span>
+                <span class="metric-value">{{ formatCurrency(orderAnalytics.totalRevenueDaily) }}</span>
                 <span class="metric-label">إيرادات اليوم</span>
               </div>
             </div>
@@ -106,7 +106,7 @@
                 <span class="metric-label">طلبات الشهر</span>
               </div>
               <div class="metric">
-                <span class="metric-value">{{ orderAnalytics.totalRevenueMonthly | currency:'USD':'symbol':'1.0-0' }}</span>
+                <span class="metric-value">{{ formatCurrency(orderAnalytics.totalRevenueMonthly) }}</span>
                 <span class="metric-label">إيرادات الشهر</span>
               </div>
             </div>
@@ -121,13 +121,13 @@
             </div>
             <div class="analytics-body">
               <div class="metric">
-                <span class="metric-value">{{ orderAnalytics.averageOrderValue | currency:'USD':'symbol':'1.0-0' }}</span>
+                <span class="metric-value">{{formatCurrency(orderAnalytics.averageOrderValue)}}</span>
                 <span class="metric-label">متوسط قيمة الطلب</span>
               </div>
-              <div class="metric">
+              <!-- <div class="metric">
                 <span class="metric-value">{{ orderAnalytics.averagePreparationTimeHours | number:'1.1-1' }}ساعة</span>
                 <span class="metric-label">متوسط وقت التحضير</span>
-              </div>
+              </div> -->
             </div>
           </div>
         </div>
@@ -144,7 +144,7 @@
     <div class="tables-section">
       <div class="row g-4">
         <!-- Latest Orders -->
-        <div class="col-lg-8">
+        <div *ngIf="latestOrders.length > 0" class="col-lg-8">
           <div class="table-card">
             <div class="table-header">
               <h4>أحدث الطلبات</h4>
@@ -172,7 +172,7 @@
                         <span class="provider-name">{{ order.providerName }}</span>
                       </td>
                       <td>
-                        <span class="amount">{{ order.finalAmount | currency:'USD':'symbol':'1.0-0' }}</span>
+                        <span class="amount">{{formatCurrency(order.finalAmount) }}</span>
                       </td>
                       <td>
                         <span [class]="getOrderStatusClass(order.status)">
@@ -195,7 +195,7 @@
 
         <!-- Best Selling Products Table -->
         <div class="col-lg-4">
-          <div class="table-card">
+          <div *ngIf="bestSellingProducts.length > 0" class="table-card">
             <div class="table-header">
               <h4>أفضل المنتجات</h4>
             </div>
@@ -209,7 +209,7 @@
                   </div>
                   <div class="product-stats">
                     <span class="sold-count">{{ product.totalSold }}</span>
-                    <span class="revenue">{{ product.totalRevenue | currency:'USD':'symbol':'1.0-0' }}</span>
+                    <span class="revenue">{{ formatCurrency(product.totalRevenue) }}</span>
                   </div>
                 </div>
               </div>

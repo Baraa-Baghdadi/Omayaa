@@ -1,9 +1,9 @@
 .app-container {
-    font-family: 'Readex Pro', sans-serif;
+  font-family: 'Readex Pro', sans-serif;
   background: var(--bg-primary);
   min-height: 100vh;
   color: var(--text-primary);
-  overflow-x: hidden;
+  /* REMOVED: overflow-x: hidden; - This was interfering with sticky positioning */
   transition: background-color 0.3s ease, color 0.3s ease;
 
   /* CSS Variables for Theme System */
@@ -87,6 +87,31 @@
   }
 }
 
+/* ADDITIONAL FIX: Ensure body doesn't interfere with sticky */
+body {
+  /* Remove any overflow properties that might interfere */
+  overflow-x: auto; /* Allow horizontal scroll if needed */
+  /* Remove any transform properties */
+}
+
+/* FIX: Update your header CSS to ensure it works with the container */
+.header {
+  background: rgba(45, 45, 45, 0.95);
+  backdrop-filter: blur(15px);
+  box-shadow: 0 4px 25px rgba(0,0,0,0.3);
+  padding: 1.5rem 0;
+  /* Ensure sticky positioning works */
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+  border-bottom: 1px solid #404040;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Ensure full width */
+  width: 100%;
+  /* Ensure it's not affected by parent transforms */
+  transform: none;
+}
+
 /* Theme Toggle Button */
 .theme-toggle {
   position: fixed;
@@ -164,7 +189,9 @@
 }
 
 .main-content {
-  padding: 3rem 0;
+  padding: 1rem 0;
+  /* Add top margin to account for sticky header if needed */
+  margin-top: 0; /* Adjust this value if header overlaps content */
 }
 
 .page-nav {
@@ -257,7 +284,7 @@
   }
 
   .main-content {
-    padding: 2rem 0;
+    padding: 1.5rem 0;
   }
 
   .page-nav {

@@ -25,7 +25,7 @@ namespace Concord.Domain.Models.Orders
         public decimal FinalAmount { get; set; }
 
         [MaxLength(500)]
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
 
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
 

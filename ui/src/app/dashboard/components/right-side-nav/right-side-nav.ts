@@ -50,7 +50,7 @@ export class RightSideNav implements OnInit {
 
   // Helper method to get display name
   getDisplayName(): string {
-    return this.currentUser?.displayName || this.currentUser?.email || 'المستخدم';
+    return this.currentUser?.displayName || 'المستخدم';
   }
 
   // Helper method to get user email

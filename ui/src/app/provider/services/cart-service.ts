@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
 
 
 @Injectable({
@@ -7,19 +9,22 @@ import { BehaviorSubject } from 'rxjs';
 })
 
 export class CartService {
-   private cartItems: any[] = [];
+  private cartItems: any[] = [];
   private cartSubject = new BehaviorSubject<any[]>([]);
   public cart$ = this.cartSubject.asObservable();
 
   private cartCountSubject = new BehaviorSubject<number>(0);
   public cartCount$ = this.cartCountSubject.asObservable();
 
-  constructor() {}
+  public readonly baseUrl  = environment.API_URL + "api/OrderProvider/";
 
-  addToCart(product: any, quantity: number, notes: string): void {
+  constructor(private http: HttpClient) { }
+
+  addToCart(product: any, quantity: number, notes: string,productId: string): void {
     const cartItemId = `${product.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     const cartItem: any = {
+      productId,
       ...product,
       quantity,
       notes,
@@ -83,5 +88,9 @@ export class CartService {
     this.cartSubject.next([...this.cartItems]);
     const totalItems = this.cartItems.reduce((sum, item) => sum + item.quantity, 0);
     this.cartCountSubject.next(totalItems);
+  }
+
+  submitOrder(bodyRequest:any):Observable<any>{
+    return this.http.post<any>(this.baseUrl+`CreateNewOrder`,bodyRequest);
   }
 }

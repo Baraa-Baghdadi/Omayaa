@@ -15,7 +15,7 @@ import { environment } from '../../../../environments/environment';
 export class ProductCatalogComponent implements OnInit {
   products: any[] = [];
   filteredProducts: any[] = [];
-  currentFilter: string = 'الكل';
+  currentFilter: string = 'البوظة';
   currentCategoryId: string = "0"; // 0 for "All"
   productQuantities: { [key: string]: number } = {};
   productNotes: { [key: string]: string } = {};
@@ -137,7 +137,7 @@ export class ProductCatalogComponent implements OnInit {
     const quantity = this.productQuantities[productId];
     const notes = this.productNotes[productId].trim();
 
-    this.cartService.addToCart(product, quantity, notes);
+    this.cartService.addToCart(product, quantity, notes,productId);
 
     // Reset form
     this.productQuantities[productId] = 1;
@@ -157,4 +157,16 @@ export class ProductCatalogComponent implements OnInit {
   capitalizeFirst(text: string): string {
     return text.charAt(0).toUpperCase() + text.slice(1);
   }
+
+    /**
+   * Formats currency for display
+   */
+    formatCurrency(amount: number): string {
+      return new Intl.NumberFormat('ar-SY', {
+        style: 'currency',
+        currency: 'SYP',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      }).format(amount);
+    }
 }
