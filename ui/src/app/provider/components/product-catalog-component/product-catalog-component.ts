@@ -15,7 +15,7 @@ import { environment } from '../../../../environments/environment';
 export class ProductCatalogComponent implements OnInit {
   products: any[] = [];
   filteredProducts: any[] = [];
-  currentFilter: string = 'البوظة';
+  currentFilter: string = '';
   currentCategoryId: string = "0"; // 0 for "All"
   productQuantities: { [key: string]: number } = {};
   productNotes: { [key: string]: string } = {};
@@ -60,7 +60,8 @@ export class ProductCatalogComponent implements OnInit {
           
           // Load all products initially (first category or all products)
           if (categories.length > 0) {     
-            this.loadProductsByCategory(this.categories[0].id);            
+            this.loadProductsByCategory(this.categories[0].id); 
+            this.currentFilter =   this.categories[0].name;         
           }
           console.log('Categories loaded:', this.categories);
         },

@@ -1,5 +1,6 @@
 ﻿using Concord.Application.DTO.Orders;
 using Concord.Application.Services.Orders;
+using Concord.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -290,6 +291,66 @@ namespace Concord.API.Controllers.Orders.admin
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while updating order {OrderId}", orderId);
+                return StatusCode(500, "An error occurred while updating the order.");
+            }
+        }
+
+        /// <summary>
+        /// Updates an existing order and its items (Admin only).
+        /// </summary>
+        /// <param name="input">Order update data</param>
+        /// <returns>Updated order details.</returns>
+        /// <response code="200">Order updated successfully.</response>
+        /// <response code="400">Invalid order data or validation errors.</response>
+        /// <response code="401">User is not authenticated.</response>
+        /// <response code="403">User does not have admin privileges.</response>
+        /// <response code="404">Order not found.</response>
+        /// <response code="409">Order cannot be updated in current status.</response>
+        /// <response code="500">Internal server error occurred.</response>
+        [HttpPut("UpdateOrderStatus")]
+        [SwaggerOperation(
+            Summary = "Update order status",
+            Description = "Updates an existing order status. Requires admin role."
+        )]
+        [ProducesResponseType(typeof(bool), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
+        [ProducesResponseType(500)]
+
+        public async Task<ActionResult<bool>> UpdateOrderStatus([FromBody] UpdateOrderStatus input)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var updatedOrder = await _orderService.UpdateOrderStatus(input);
+
+                if (updatedOrder == null)
+                {;
+                    return NotFound($"Order with ID {input.OrderId} not found.");
+                }
+
+                return Ok(updatedOrder);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning("Invalid order update data: {Message}", ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning("Order update conflict: {Message}", ex.Message);
+                return Conflict(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while updating order {OrderId}", input.OrderId);
                 return StatusCode(500, "An error occurred while updating the order.");
             }
         }

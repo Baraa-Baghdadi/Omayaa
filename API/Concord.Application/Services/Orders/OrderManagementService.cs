@@ -1,6 +1,7 @@
 ﻿using Concord.Application.DTO.Orders;
 using Concord.Application.Extentions;
 using Concord.Application.Services.Providers;
+using Concord.Domain.Enums;
 using Concord.Domain.Models.Identity;
 using Concord.Domain.Models.Orders;
 using Concord.Domain.Models.Products;
@@ -462,6 +463,34 @@ namespace Concord.Application.Services.Orders
             }
             catch (Exception ex)
             {
+                throw new ApplicationException($"Error updating order: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Updates order status (Admin Side)
+        /// </summary>
+        /// <param name="orderId">Order ID to update</param>
+        /// <param name="newStatus">new order status</param>
+        /// <returns> boolean </returns>
+        public async Task<bool> UpdateOrderStatus(UpdateOrderStatus input)
+        {
+            try
+            {
+                var order = await _orderRepository.GetFirstOrDefault(o => o.Id == input.OrderId);
+
+                if (order == null)
+                {
+                    return false;
+                }
+
+                order.Status = input.NewStatus;
+                _orderRepository.Update(order);
+                await _orderRepository.SaveChangesAsync();
+                return true;
+
+            }
+            catch (Exception ex) {
                 throw new ApplicationException($"Error updating order: {ex.Message}", ex);
             }
         }
