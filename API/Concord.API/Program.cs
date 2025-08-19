@@ -1,7 +1,9 @@
 using Concord.Application.Services.Account.Providers;
 using Concord.Application.Services.AdminDashboard;
 using Concord.Application.Services.Categories;
+using Concord.Application.Services.Hub;
 using Concord.Application.Services.Mail;
+using Concord.Application.Services.Notifications;
 using Concord.Application.Services.Orders;
 using Concord.Application.Services.Products;
 using Concord.Application.Services.Providers;
@@ -87,6 +89,10 @@ builder.Services.AddTransient<ICategoryService, CategoryService>();
 builder.Services.AddTransient<IProductManagementService, ProductManagementService>();
 builder.Services.AddTransient<IOrderManagementService, OrderManagementService>();
 builder.Services.AddTransient<IDashboardService, DashboardService>();
+builder.Services.AddTransient<IAdminNotifications, AdminNotifications>();
+// for can inject " private readonly BroadcastHub _hub;" in another class:
+builder.Services.AddTransient<BroadcastHub>();
+
 
 
 // For Add Auto mapper to our project
@@ -144,6 +150,8 @@ builder.Services.AddSwaggerGen(c =>
     // Optional: Enable annotations for additional features
     c.EnableAnnotations();
 });
+
+builder.Services.AddProblemDetails();
 
 // Enable Cors For FrontEnd:
 // Add CORS policy
@@ -220,10 +228,36 @@ app.UseStaticFiles();
 app.UseMiddleware<AuthenticationMiddleware>();
 
 
+// For signalR:
+app.Use(async (httpContext, next) =>
+{
+    var accessToken = httpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+    if (string.IsNullOrEmpty(accessToken))
+    {
+        accessToken = httpContext.Request.Query["access_token"];
+    }
+
+    var path = httpContext.Request.Path;
+
+    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notify"))
+    {
+        httpContext.Request.Headers["Authorization"] = "Bearer " + accessToken;
+    }
+
+    await next();
+});
+
+
+
 app.UseAuthentication();
 app.UseRouting();
 app.UseAuthorization();
 
+// add signalR:
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapHub<BroadcastHub>("/notify");
+});
 
 
 app.MapControllers();

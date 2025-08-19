@@ -1,8 +1,10 @@
 ﻿using Concord.Application.DTO.Orders;
 using Concord.Application.Extentions;
+using Concord.Application.Services.Notifications;
 using Concord.Application.Services.Providers;
 using Concord.Domain.Enums;
 using Concord.Domain.Models.Identity;
+using Concord.Domain.Models.Notifications;
 using Concord.Domain.Models.Orders;
 using Concord.Domain.Models.Products;
 using Concord.Domain.Models.Providers;
@@ -19,26 +21,26 @@ namespace Concord.Application.Services.Orders
     public class OrderManagementService : IOrderManagementService
     {
         private readonly IGenericRepository<Order> _orderRepository;
-        private readonly IGenericRepository<OrderItem> _orderItemRepository;
         private readonly IGenericRepository<Product> _productRepository;
         private readonly IGenericRepository<Provider> _providerRepository;
         private readonly IProviderManagementService _providerManagementService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IAdminNotifications _notificationProviderService;
 
         public OrderManagementService(
             IGenericRepository<Order> orderRepository,
-            IGenericRepository<OrderItem> orderItemRepository,
             IGenericRepository<Product> productRepository,
             IGenericRepository<Provider> providerRepository,
             IProviderManagementService providerManagementService,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IAdminNotifications notificationProviderService)
         {
             _orderRepository = orderRepository;
-            _orderItemRepository = orderItemRepository;
             _productRepository = productRepository;
             _providerRepository = providerRepository;
             _providerManagementService = providerManagementService;
             _userManager = userManager;
+            _notificationProviderService = notificationProviderService;
         }
 
         /// <summary>
@@ -348,6 +350,14 @@ namespace Concord.Application.Services.Orders
 
                 await _orderRepository.AddAsync(order);
                 await _orderRepository.SaveChangesAsync();
+
+                // send notification to instructor:
+                try
+                {
+                    await SendNotificationForAdmin(provider.Id, order.Id, orderNumber);
+                }
+                catch { }
+
 
                 // Return the created order with all details
                 return await GetOrderByIdAsync(order.Id);
@@ -695,25 +705,32 @@ namespace Concord.Application.Services.Orders
             };
         }
 
+        private async Task SendNotificationForAdmin(Guid providerId, Guid orderId, string omayyaOrderId)
+        {
+            await _notificationProviderService.CreateOrderNotification(providerId, orderId, omayyaOrderId,
+                $@"تم إنشاء طلب جديد برقم : {omayyaOrderId}", NotificationTypeEnum.Admin);
+        }
+
+        // Helper class for expression combination
+        public class ReplaceExpressionVisitor : ExpressionVisitor
+        {
+            private readonly Expression _oldValue;
+            private readonly Expression _newValue;
+
+            public ReplaceExpressionVisitor(Expression oldValue, Expression newValue)
+            {
+                _oldValue = oldValue;
+                _newValue = newValue;
+            }
+
+            public override Expression Visit(Expression node)
+            {
+                return node == _oldValue ? _newValue : base.Visit(node);
+            }
+        }
+
+
         #endregion
 
-    }
-
-    // Helper class for expression combination
-    public class ReplaceExpressionVisitor : ExpressionVisitor
-    {
-        private readonly Expression _oldValue;
-        private readonly Expression _newValue;
-
-        public ReplaceExpressionVisitor(Expression oldValue, Expression newValue)
-        {
-            _oldValue = oldValue;
-            _newValue = newValue;
-        }
-
-        public override Expression Visit(Expression node)
-        {
-            return node == _oldValue ? _newValue : base.Visit(node);
-        }
     }
 }
