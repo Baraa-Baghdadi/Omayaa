@@ -10,6 +10,8 @@ import {
   OrderStatisticsDto,
   CreateOrderDto,
   UpdateOrderDto,
+  OrderStatus,
+  UpdateOrderStatusDto,
 } from '../../../services/order-management-service';
 import { ModalConfig, ModalResult, SharedModalComponent } from '../../../../shared/components/shared-modal-component/shared-modal-component';
 import { SharedModalService } from '../../../../shared/services/shared-modal-service';
@@ -341,5 +343,89 @@ formatCurrency(amount: number): string {
       month: '2-digit',
       day: '2-digit'
     }).format(dateObj);
+  }
+
+   /**
+   * Updates order status directly in the table
+   */
+  updateOrderStatus(order: OrderDto, newStatus: OrderStatus): void {
+    if (order.status === newStatus) {
+      return; // No change needed
+    }
+
+    const actionKey = `status_${order.id}`;
+    this.actionLoading[actionKey] = true;
+
+    const updateData: UpdateOrderStatusDto = {
+      orderId: order.id,
+      newStatus: newStatus
+    };
+
+    this.orderService.updateOrderStatus(updateData).subscribe({
+      next: (success) => {
+        if (success) {
+          // Update the local order status
+          order.status = newStatus;
+        } else {
+        }
+        this.actionLoading[actionKey] = false;
+      },
+      error: (error) => {
+        this.actionLoading[actionKey] = false;
+      }
+    });
+  }
+
+    /**
+   * Checks if status update is loading for a specific order
+   */
+  isStatusLoading(orderId: string): boolean {
+    return this.actionLoading[`status_${orderId}`] || false;
+  }
+
+    /**
+   * Gets the CSS class for order status badge
+   */
+  getOrderStatusClass(status: OrderStatus): string {
+    switch (status) {
+      case OrderStatus.New:
+        return 'badge bg-warning text-dark';
+      case OrderStatus.Completed:
+        return 'badge bg-success';
+      case OrderStatus.Canceled:
+        return 'badge bg-danger';
+      default:
+        return 'badge bg-secondary';
+    }
+  }
+
+    /**
+   * Gets the display text for order status
+   */
+  getOrderStatusText(status: OrderStatus): string {
+    switch (status) {
+      case OrderStatus.New:
+        return 'جديد';
+      case OrderStatus.Completed:
+        return 'مكتمل';
+      case OrderStatus.Canceled:
+        return 'ملغي';
+      default:
+        return 'غير محدد';
+    }
+  }
+
+    /**
+   * Gets available status options for an order
+   */
+  getAvailableStatusOptions(currentStatus: OrderStatus): { value: OrderStatus, label: string, class: string }[] {
+    const allOptions = [
+      { value: OrderStatus.New, label: 'جديد', class: 'text-warning' },
+      { value: OrderStatus.Completed, label: 'مكتمل', class: 'text-success' },
+      { value: OrderStatus.Canceled, label: 'ملغي', class: 'text-danger' }
+    ];
+
+    // Return all options except the current one
+    return allOptions.filter(option => option.value !== currentStatus);
   }
 }

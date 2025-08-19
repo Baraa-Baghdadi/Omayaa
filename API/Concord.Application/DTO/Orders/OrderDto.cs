@@ -1,4 +1,6 @@
-﻿namespace Concord.Application.DTO.Orders
+﻿using Concord.Domain.Enums;
+
+namespace Concord.Application.DTO.Orders
 {
     public class OrderDto
     {
@@ -9,6 +11,7 @@
         public decimal TotalAmount { get; set; }
         public decimal DiscountAmount { get; set; }
         public decimal FinalAmount { get; set; }
+        public OrderStatus Status { get; set; }
         public string Notes { get; set; }
         public DateTime OrderDate { get; set; }
         public DateTime? DeliveryDate { get; set; }

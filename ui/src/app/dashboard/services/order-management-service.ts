@@ -14,6 +14,7 @@ export interface OrderDto {
   providerName: string;
   totalAmount: number;
   discountAmount: number;
+  status : OrderStatus;
   finalAmount: number;
   notes: string;
   orderDate: Date;
@@ -98,6 +99,20 @@ export interface MonthlyRevenueDto {
   month: string;
   revenue: number;
   orderCount: number;
+}
+
+/**
+ * Order Status Enum - matching backend
+ */
+export enum OrderStatus {
+  New = 0,
+  Completed = 1,
+  Canceled = 2
+}
+
+export interface UpdateOrderStatusDto {
+  orderId: string;
+  newStatus: OrderStatus;
 }
 
 /**
@@ -187,6 +202,19 @@ export class OrderManagementService {
    */
   updateOrder(orderId: string, updateOrderDto: UpdateOrderDto): Observable<OrderDto> {
     return this.http.put<OrderDto>(`${this.apiUrl}/${orderId}`, updateOrderDto)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  
+  /**
+   * Updates order status
+   * @param updateStatusDto Order status update data
+   * @returns Observable of boolean success status
+   */
+  updateOrderStatus(updateStatusDto: UpdateOrderStatusDto): Observable<boolean> {
+    return this.http.put<boolean>(`${this.apiUrl}/UpdateOrderStatus`, updateStatusDto)
       .pipe(
         catchError(this.handleError)
       );

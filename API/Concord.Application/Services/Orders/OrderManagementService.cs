@@ -669,6 +669,7 @@ namespace Concord.Application.Services.Orders
                 DiscountAmount = order.DiscountAmount,
                 FinalAmount = order.FinalAmount,
                 Notes = order.Notes,
+                Status = order.Status,
                 OrderDate = order.OrderDate,
                 DeliveryDate = order.DeliveryDate,
                 CreatedAt = order.CreatedAt,
