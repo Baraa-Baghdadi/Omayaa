@@ -17,6 +17,6 @@ namespace Concord.Application.DTO.Orders
         public int Quantity { get; set; }
 
         [MaxLength(200)]
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
     }
 }

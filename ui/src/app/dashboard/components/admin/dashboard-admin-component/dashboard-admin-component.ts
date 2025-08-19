@@ -60,8 +60,8 @@ export class DashboardAdminComponent implements OnInit, OnDestroy{
     const requests = forkJoin({
       cards: this.dashboardService.getDashboardCards(),
       analytics: this.dashboardService.getOrderAnalytics(),
-      bestSelling: this.dashboardService.getBestSellingProducts(10),
-      latestOrders: this.dashboardService.getLatestOrders(10),
+      bestSelling: this.dashboardService.getBestSellingProducts(3),
+      latestOrders: this.dashboardService.getLatestOrders(3),
       ordersByStatus: this.dashboardService.getOrdersByStatus(),
     });
 
@@ -362,5 +362,17 @@ export class DashboardAdminComponent implements OnInit, OnDestroy{
    */
   getOrderStatusClass(status: OrderStatus): string {
     return this.dashboardService.getOrderStatusClass(status);
+  }
+
+    /**
+ * Formats currency for display
+ */
+  formatCurrency(amount: number): string {
+      return new Intl.NumberFormat('ar-SY', {
+        style: 'currency',
+        currency: 'SYP',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      }).format(amount);
   }
 }

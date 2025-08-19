@@ -1,9 +1,15 @@
 ﻿using Concord.Application.DTO.Orders;
+using Concord.Application.Extentions;
+using Concord.Application.Services.Providers;
+using Concord.Domain.Enums;
+using Concord.Domain.Models.Identity;
 using Concord.Domain.Models.Orders;
 using Concord.Domain.Models.Products;
 using Concord.Domain.Models.Providers;
 using Concord.Domain.Repositories;
+using Microsoft.AspNetCore.Identity;
 using System.Linq.Expressions;
+using System.Security.Claims;
 
 namespace Concord.Application.Services.Orders
 {
@@ -16,17 +22,23 @@ namespace Concord.Application.Services.Orders
         private readonly IGenericRepository<OrderItem> _orderItemRepository;
         private readonly IGenericRepository<Product> _productRepository;
         private readonly IGenericRepository<Provider> _providerRepository;
+        private readonly IProviderManagementService _providerManagementService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public OrderManagementService(
             IGenericRepository<Order> orderRepository,
             IGenericRepository<OrderItem> orderItemRepository,
             IGenericRepository<Product> productRepository,
-            IGenericRepository<Provider> providerRepository)
+            IGenericRepository<Provider> providerRepository,
+            IProviderManagementService providerManagementService,
+            UserManager<ApplicationUser> userManager)
         {
             _orderRepository = orderRepository;
             _orderItemRepository = orderItemRepository;
             _productRepository = productRepository;
             _providerRepository = providerRepository;
+            _providerManagementService = providerManagementService;
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -152,7 +164,7 @@ namespace Concord.Application.Services.Orders
         }
 
         /// <summary>
-        /// Creates a new order with order items
+        /// Creates a new order with order items from admin side
         /// </summary>
         public async Task<OrderDto> CreateOrderAsync(CreateOrderDto createOrderDto)
         {
@@ -202,7 +214,7 @@ namespace Concord.Application.Services.Orders
                 }
 
                 // Calculate final amount
-                var finalAmount = totalAmount - createOrderDto.DiscountAmount;
+                var finalAmount = totalAmount - createOrderDto.DiscountAmount ?? 0;
                 if (finalAmount < 0)
                 {
                     throw new ArgumentException("Discount amount cannot be greater than total amount");
@@ -218,7 +230,7 @@ namespace Concord.Application.Services.Orders
                     OrderNumber = orderNumber,
                     ProviderId = createOrderDto.ProviderId,
                     TotalAmount = totalAmount,
-                    DiscountAmount = createOrderDto.DiscountAmount,
+                    DiscountAmount = createOrderDto.DiscountAmount ?? 0,
                     FinalAmount = finalAmount,
                     Notes = createOrderDto.Notes,
                     OrderDate = DateTime.UtcNow,
@@ -239,6 +251,109 @@ namespace Concord.Application.Services.Orders
                 // Return the created order with all details
                 return await GetOrderByIdAsync(order.Id);
             }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"Error creating order: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Creates a new order with order items from provider side
+        /// </summary>
+        /// <param name="createOrderDto">Order creation data with items</param>
+        /// <returns>Created order with generated order number</returns>
+        public async Task<OrderDto> CreateNewOrderAsync(ClaimsPrincipal currentUser,CreateProviderOrder createOrderDto)
+        {
+            try
+            {
+                // get data from token:
+                var user = await _userManager.FindByEmailFromClaimsPrincipal(currentUser);
+                var currentTenant = user.TenantId ?? Guid.Empty;
+                if (currentTenant == Guid.Empty) throw new ArgumentException("You should login");
+
+                // get provider data:
+                var provider = await _providerManagementService.GetProviderByTenantIdAsync(currentTenant);
+
+                if (provider == null)
+                {
+                    throw new ArgumentException("Provider not found");
+                }
+
+                // Validate products and calculate totals
+                decimal totalAmount = 0;
+                var orderItems = new List<OrderItem>();
+
+                foreach (var itemDto in createOrderDto.OrderItems)
+                {
+                    var product = await _productRepository.GetByIdAsync(itemDto.ProductId);
+                    if (product == null)
+                    {
+                        throw new ArgumentException($"Product with ID {itemDto.ProductId} not found");
+                    }
+
+                    if (!product.IsActive)
+                    {
+                        throw new ArgumentException($"Product '{product.Name}' is not active");
+                    }
+
+                    var unitPrice = product.NewPrice ?? product.Price;
+                    var itemTotal = unitPrice * itemDto.Quantity;
+                    totalAmount += itemTotal;
+
+                    var orderItem = new OrderItem
+                    {
+                        Id = Guid.NewGuid(),
+                        ProductId = product.Id,
+                        ProductName = product.Name,
+                        Quantity = itemDto.Quantity,
+                        UnitPrice = unitPrice,
+                        TotalPrice = itemTotal,
+                        Notes = itemDto.Notes,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    orderItems.Add(orderItem);
+                }
+
+                // Calculate final amount
+                var finalAmount = totalAmount;
+                if (finalAmount < 0)
+                {
+                    throw new ArgumentException("Discount amount cannot be greater than total amount");
+                }
+
+                // Generate unique order number
+                var orderNumber = await GenerateOrderNumberAsync();
+
+                // Create order
+                var order = new Order
+                {
+                    Id = Guid.NewGuid(),
+                    OrderNumber = orderNumber,
+                    ProviderId = provider.Id,
+                    TotalAmount = totalAmount,
+                    DiscountAmount = 0,
+                    FinalAmount = finalAmount,
+                    OrderDate = DateTime.UtcNow,
+                    DeliveryDate = createOrderDto.DeliveryDate ?? null,
+                    CreatedAt = DateTime.UtcNow,
+                    OrderItems = orderItems
+                };
+
+                // Set order reference for items
+                foreach (var item in orderItems)
+                {
+                    item.OrderId = order.Id;
+                }
+
+                await _orderRepository.AddAsync(order);
+                await _orderRepository.SaveChangesAsync();
+
+                // Return the created order with all details
+                return await GetOrderByIdAsync(order.Id);
+            
+            }
+            
             catch (Exception ex)
             {
                 throw new ApplicationException($"Error creating order: {ex.Message}", ex);
@@ -348,6 +463,34 @@ namespace Concord.Application.Services.Orders
             }
             catch (Exception ex)
             {
+                throw new ApplicationException($"Error updating order: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Updates order status (Admin Side)
+        /// </summary>
+        /// <param name="orderId">Order ID to update</param>
+        /// <param name="newStatus">new order status</param>
+        /// <returns> boolean </returns>
+        public async Task<bool> UpdateOrderStatus(UpdateOrderStatus input)
+        {
+            try
+            {
+                var order = await _orderRepository.GetFirstOrDefault(o => o.Id == input.OrderId);
+
+                if (order == null)
+                {
+                    return false;
+                }
+
+                order.Status = input.NewStatus;
+                _orderRepository.Update(order);
+                await _orderRepository.SaveChangesAsync();
+                return true;
+
+            }
+            catch (Exception ex) {
                 throw new ApplicationException($"Error updating order: {ex.Message}", ex);
             }
         }

@@ -1,4 +1,6 @@
 ﻿using Concord.Application.DTO.Orders;
+using Concord.Domain.Enums;
+using System.Security.Claims;
 
 namespace Concord.Application.Services.Orders
 {
@@ -29,11 +31,18 @@ namespace Concord.Application.Services.Orders
         Task<OrderDto?> GetOrderByNumberAsync(string orderNumber);
 
         /// <summary>
-        /// Creates a new order with order items
+        /// Creates a new order with order items from admin side
         /// </summary>
         /// <param name="createOrderDto">Order creation data with items</param>
         /// <returns>Created order with generated order number</returns>
         Task<OrderDto> CreateOrderAsync(CreateOrderDto createOrderDto);
+
+        /// <summary>
+        /// Creates a new order with order items from provider side
+        /// </summary>
+        /// <param name="createOrderDto">Order creation data with items</param>
+        /// <returns>Created order with generated order number</returns>
+        Task<OrderDto> CreateNewOrderAsync(ClaimsPrincipal currentUser,CreateProviderOrder createOrderDto);
 
         /// <summary>
         /// Updates an existing order and its items
@@ -41,7 +50,15 @@ namespace Concord.Application.Services.Orders
         /// <param name="orderId">Order ID to update</param>
         /// <param name="updateOrderDto">Order update data</param>
         /// <returns>Updated order</returns>
-        Task<OrderDto?> UpdateOrderAsync(Guid orderId, UpdateOrderDto updateOrderDto);
+        Task<OrderDto?> UpdateOrderAsync(Guid orderId, UpdateOrderDto newStatus);
+
+        /// <summary>
+        /// Updates order status (Admin Side)
+        /// </summary>
+        /// <param name="orderId">Order ID to update</param>
+        /// <param name="newStatus">new order status</param>
+        /// <returns>Updated order status</returns>
+        Task<bool> UpdateOrderStatus(UpdateOrderStatus input);
 
         /// <summary>
         /// Deletes an order and all its items (Admin only)

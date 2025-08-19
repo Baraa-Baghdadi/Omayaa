@@ -1,4 +1,5 @@
 ﻿using Concord.Application.DTO.Category;
+using Concord.Domain.Models.Categories;
 
 namespace Concord.Application.Services.Categories
 {
@@ -13,6 +14,12 @@ namespace Concord.Application.Services.Categories
         /// <param name="request">Request parameters for filtering and pagination</param>
         /// <returns>Paginated list of categories with detailed information</returns>
         Task<GetCategoriesResponseDto> GetAllCategoriesAsync(GetCategoriesRequestDto request);
+
+        /// <summary>
+        /// Gets all categories
+        /// </summary>
+        /// <returns>list of categories with detailed information</returns>
+        Task<List<Category>> GetAllCategoriesAsync();
 
         /// <summary>
         /// Gets a specific category by ID
