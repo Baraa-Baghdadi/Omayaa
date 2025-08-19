@@ -372,7 +372,7 @@ export class DashboardAdminComponent implements OnInit, OnDestroy{
         style: 'currency',
         currency: 'SYP',
         minimumFractionDigits: 0,
-        maximumFractionDigits: 2
+        maximumFractionDigits: 0
       }).format(amount);
   }
 }

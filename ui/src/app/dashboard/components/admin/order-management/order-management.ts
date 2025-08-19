@@ -329,7 +329,7 @@ formatCurrency(amount: number): string {
     style: 'currency',
     currency: 'SYP',
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2
+    maximumFractionDigits: 0
   }).format(amount);
 }
 

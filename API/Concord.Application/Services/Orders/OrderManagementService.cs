@@ -530,7 +530,7 @@ namespace Concord.Application.Services.Orders
                 var orders = allOrders.ToList();
 
                 var totalOrders = orders.Count;
-                var totalRevenue = orders.Sum(o => o.FinalAmount);
+                var totalRevenue = orders.Where(o => o.Status == OrderStatus.Completed).Sum(o => o.FinalAmount);
 
                 // Current month revenue
                 var currentMonth = DateTime.UtcNow.Month;
@@ -538,23 +538,23 @@ namespace Concord.Application.Services.Orders
                 var monthlyRevenue = orders
                     .Where(o =>
                                o.OrderDate.Month == currentMonth &&
-                               o.OrderDate.Year == currentYear)
+                               o.OrderDate.Year == currentYear && o.Status == OrderStatus.Completed)
                     .Sum(o => o.FinalAmount);
 
-                var averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+                var averageOrderValue = totalOrders > 0 ? totalRevenue / orders.Where(o => o.Status == OrderStatus.Completed).Count() : 0;
 
                 // Monthly revenue data for last 12 months
                 var monthlyData = new List<MonthlyRevenueDto>();
                 for (int i = 11; i >= 0; i--)
                 {
                     var date = DateTime.UtcNow.AddMonths(-i);
-                    var monthOrders = orders.Where(o => o.OrderDate.Month == date.Month &&
+                    var monthOrders = orders.Where(o =>  o.OrderDate.Month == date.Month &&
                                                        o.OrderDate.Year == date.Year);
 
                     monthlyData.Add(new MonthlyRevenueDto
                     {
                         Month = date.ToString("MMM yyyy"),
-                        Revenue = monthOrders.Sum(o => o.FinalAmount),
+                        Revenue = monthOrders.Where(o => o.Status == OrderStatus.Completed).Sum(o => o.FinalAmount),
                         OrderCount = monthOrders.Count()
                     });
                 }
