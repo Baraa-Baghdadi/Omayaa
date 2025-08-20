@@ -155,16 +155,16 @@ builder.Services.AddProblemDetails();
 
 // Enable Cors For FrontEnd:
 // Add CORS policy
-builder.Services.AddCors(options =>
+// Enable Cors For FrontEnd:
+builder.Services.AddCors(c =>
 {
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy
-            .AllowAnyOrigin() // allows all origins
-            .AllowAnyMethod() // allows GET, POST, PUT, DELETE, etc.
-            .AllowAnyHeader(); // allows all headers
-    });
+    c.AddPolicy("AllowOrigin", options => options.WithOrigins("http://localhost:4200")
+            .AllowCredentials()
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+    );
 });
+
 
 // add signalR:
 builder.Services.AddSignalR();
@@ -217,7 +217,7 @@ else
 }
 
 // Enable CORS
-app.UseCors("AllowAll");
+app.UseCors("AllowOrigin");
 
 app.UseHttpsRedirection();
 

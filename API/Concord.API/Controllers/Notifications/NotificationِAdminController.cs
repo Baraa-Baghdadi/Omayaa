@@ -16,7 +16,7 @@ namespace Concord.API.Controllers.Notifications
             _notificationService = notificationService;
         }
 
-        [HttpGet("GetListOfProviderNotification")]
+        [HttpGet("GetListOfAdminNotification")]
         public async Task<ActionResult> GetListOfProviderNotification()
         {
             var result =  await _notificationService.GetListOfAdminNotification(User);

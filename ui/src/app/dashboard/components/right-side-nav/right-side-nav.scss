@@ -45,4 +45,102 @@
     border: 2px solid transparent;
     transition: border-color 0.3s ease;
   }
-  
+
+
+  // Notification Style:
+.allBell{
+  position: fixed;
+  bottom:15px;
+  left:2px;
+  z-index: 50000;
+}
+.fa-bell{
+  color: #d4af37 ;
+}
+.count{
+font-size: 10px !important;
+top:5px !important;
+}
+
+.list{
+background-color: white !important;
+}
+
+.dropdown-item.active, .dropdown-item:active{
+background-color: #f9f9f9 !important ;
+}
+.dropdown-item:hover, .dropdown-item:focus{
+background-color: #f9f9f9 !important ;
+}
+.dropdown-item.active, .dropdown-item:active{
+color: inherit !important;
+}
+// End Main Style........
+.list{
+position: absolute;
+top: -430px;
+inset-inline-end: 30px;
+height: 450px !important;
+overflow-y: scroll !important;
+padding: 8px 20px 8px 20px;
+z-index: 50000;
+}
+.list2{
+width: 380px;
+max-width: 380px !important;
+overflow-x: hidden;
+overflow-y: scroll !important;
+z-index: 50000;
+}
+.innerBell{
+color: #f16c75 !important;
+}
+
+.notification:hover{
+background-color: #f9f9f9 ;
+cursor: pointer;
+}
+
+
+.notification:last-child {
+border-bottom: none;
+}
+
+.messages{
+margin-top: -10px;
+}
+
+.close-notification{
+  position: absolute;top:7px;right:15px;
+}
+
+.fs-14{
+  font-size: 14px;
+}
+
+// Scroll Design:
+
+// /* width */
+::-webkit-scrollbar {
+width: 2px;
+}
+
+// /* Track */
+::-webkit-scrollbar-track {
+box-shadow: inset 0 0 5px white; 
+border-radius: 8px;
+width: 2px;
+}
+
+// /* Handle */
+::-webkit-scrollbar-thumb {
+background: gray; 
+border-radius: 8px;
+width: 5px;
+}
+
+// /* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+background: gray; 
+}
+

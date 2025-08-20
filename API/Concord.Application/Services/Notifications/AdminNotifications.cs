@@ -1,5 +1,6 @@
 ﻿using Concord.Application.DTO.Notifications;
 using Concord.Application.Extentions;
+using Concord.Application.Helpers;
 using Concord.Application.Services.Hub;
 using Concord.Domain.Models.Identity;
 using Concord.Domain.Models.Notifications;
@@ -49,7 +50,7 @@ namespace Concord.Application.Services.Notifications
                 IsRead = false,
                 Type = type,
                 TenantId = new Guid("11111111-1111-1111-1111-111111111111"),
-                CreatedOn = null
+                CreatedOn = ServiceHelper.getTimeSpam(DateTime.UtcNow)!.Value
             };
 
             await _notificationRepo.AddAsync(notification);
