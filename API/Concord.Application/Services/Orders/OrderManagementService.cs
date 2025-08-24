@@ -356,7 +356,9 @@ namespace Concord.Application.Services.Orders
                 {
                     await SendNotificationForAdmin(provider.Id, order.Id, orderNumber);
                 }
-                catch { }
+                catch(Exception ex) {
+                    throw new Exception(ex.Message);
+                }
 
 
                 // Return the created order with all details

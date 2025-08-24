@@ -61,7 +61,7 @@ namespace Concord.Application.Services.Notifications
 
             if (allConnections.Any())
             {
-                var tenantId = provider.TenantId;
+                var tenantId = new Guid("11111111-1111-1111-1111-111111111111");
                 if (allConnections.ContainsKey(tenantId))
                 {
                     var connectionsId = allConnections[tenantId];

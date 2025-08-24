@@ -111,7 +111,7 @@
           <div class="notification-content col-7">
             <p class="ms-3 fs-14">{{ item.content }}</p>
           </div>
-          <p class="col-3 fs-14">{{item.createdOn}}</p>
+          <p class="col-3 fs-14">{{(item.createdOn * 1000) | date:'yyyy-MM-dd'}}</p>
         </div>
       </div>
     </div>

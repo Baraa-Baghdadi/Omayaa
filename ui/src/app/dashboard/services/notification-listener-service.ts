@@ -34,8 +34,8 @@ export class NotificationListenerService {
       this.notificationsService.getListNotification()
         .subscribe((data:any) => {
           if (this.NotificationList.value != null) {
+            this.makeNotificationListEmpty();
             var oldValue = this.NotificationList.value;
-            data = [...oldValue,...data];
             this.NotificationList.next(data);                        
           }
           else{          

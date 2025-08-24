@@ -19,7 +19,7 @@ export class SignalRService {
       if (this.authService.isLogin$()) {
         const connection = new signalR.HubConnectionBuilder()
         .configureLogging(signalR.LogLevel.Information)
-        .withUrl(environment.API_URL + 'notify',{accessTokenFactory  :  () => this.authService.GetTokenFromLocal(),
+        .withUrl(environment.API_URL + 'notify',{accessTokenFactory:() => this.authService.GetTokenFromLocal(),
           withCredentials: true
         })
         .build();
@@ -28,10 +28,9 @@ export class SignalRService {
         }).catch(function (err) {
           return console.error(err.toString());
         });
-    
-        // recive message:
-        connection.on("CustomerCreateOrder", (data:any) => {
-          console.log("Notification",data);  
+  
+          connection.on("CustomerCreateOrder", (data:any) => {
+          console.log("Notification 2",data);  
           this.NotificationListener.makeNotificationListEmpty();
           this.NotificationListener.reciveCustomerCreateBookingListener.next(true);  
           // update notification list:
@@ -39,9 +38,11 @@ export class SignalRService {
             this.NotificationListener.getMsgList();
           }, 1000);  
           // increase count of unread MSG:
-          this.NotificationListener.increaseCount();  
+          // this.NotificationListener.increaseCount();
+          this.NotificationListener.getUnreadedMsg();  
         }); 
       }
+      
     }
 
 }

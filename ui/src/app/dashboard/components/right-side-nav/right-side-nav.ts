@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ThemeService } from '../../../shared/services/theme-service';
 import { Auth } from '../../../shared/services/auth';
-import { Subscription } from 'rxjs';
+import { map, Subscription, take, tap } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { NotificationListenerService } from '../../services/notification-listener-service';
 import { SignalRService } from '../../services/signal-rservice';
@@ -28,27 +28,20 @@ export class RightSideNav implements OnInit {
     // Subscribe to current user changes
     this.userSubscription = this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
-    });
-
+    });    
     // If currentUser is empty, try to get it from the service
     if (!this.currentUser && this.authService.isLogin$()) {
-      this.authService.getCurrentUser().subscribe({
-        next: (data: any) => {
-          this.authService.currentUser.next(data);
-         if (this.currentUser.tenantId) {
-            // connect to signalR:
-            this.signalR.connect();  
-            this.notificationListener.makeNotificationListEmpty();
-            this.getUnreadedMsg();
-        }
-
-        },
-        error: (error) => {
-          console.error('Error getting current user:', error);
-        }
-      });
+      var x = this.authService.getCurrentUser().pipe(
+        map((data:any) => {this.authService.currentUser.next(data);this.currentUser = data}),
+        tap((data:any) => {    
+          if(this.currentUser && this.currentUser.tenantId){      
+          // connect to signalR:
+          this.signalR.connect(); 
+          this.getUnreadedMsg();
+          this.getMsgList();
+    }})
+      ).subscribe();
     }
-    this.getMsgList();
   }
 
   toggleMode() {
@@ -92,6 +85,7 @@ export class RightSideNav implements OnInit {
   }
 
   getMsgList(){
+    this.notificationListener.makeNotificationListEmpty();
     this.notificationListener.getMsgList();
   }
 }
