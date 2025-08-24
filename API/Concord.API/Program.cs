@@ -175,10 +175,11 @@ builder.Services.AddProblemDetails();
 // Enable Cors For FrontEnd:
 builder.Services.AddCors(c =>
 {
-    c.AddPolicy("AllowOrigin", options => options.WithOrigins("http://localhost:4200")
-            .AllowCredentials()
-            .AllowAnyHeader()
-            .AllowAnyMethod()
+    c.AddPolicy("AllowAll", options => options
+        .WithOrigins("http://localhost:4200", "https://omayya-class.web.app") // Specify your frontend URLs
+        .AllowCredentials()
+        .AllowAnyHeader()
+        .AllowAnyMethod()
     );
 });
 
@@ -234,7 +235,7 @@ else
 }
 
 // Enable CORS
-app.UseCors("AllowOrigin");
+app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 
