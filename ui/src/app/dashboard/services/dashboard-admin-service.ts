@@ -220,7 +220,7 @@ export class DashboardAdminService {
       [OrderStatus.Completed]: 'مكتمل',
       [OrderStatus.Cancelled]: 'ملغي',
     };
-    return statusMap[status] || 'غير محدد';
+    return statusMap[status] || 'جديد';
   }
 
   /**

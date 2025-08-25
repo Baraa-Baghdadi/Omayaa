@@ -1,10 +1,13 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, forkJoin } from 'rxjs';
-import { takeUntil, finalize } from 'rxjs/operators';
+import { Subject, Subscription, forkJoin } from 'rxjs';
+import { takeUntil, finalize, tap, map } from 'rxjs/operators';
 import { Chart, registerables } from 'chart.js';
 import { BestSellingProductDto, DashboardAdminService, DashboardCardsDto, LatestOrderDto, OrderAnalyticsDto, OrdersByStatusDto, OrderStatus, ProductCategoryDistributionDto } from '../../../services/dashboard-admin-service';
+import { Auth } from '../../../../shared/services/auth';
+import { NotificationListenerService } from '../../../services/notification-listener-service';
+import { SignalRService } from '../../../services/signal-rservice';
 
 Chart.register(...registerables);
 
@@ -40,10 +43,46 @@ export class DashboardAdminComponent implements OnInit, OnDestroy{
   loading = false;
   revenuePeriod = 30;
 
-  constructor(private dashboardService: DashboardAdminService) {}
+  currentUser: any = null;
+  userSubscription: Subscription = new Subscription();
+
+  constructor(private dashboardService: DashboardAdminService,private authService:Auth,
+      private signalR:SignalRService,
+      public notificationListener : NotificationListenerService) {}
 
   ngOnInit(): void {
     this.loadDashboardData();
+    // Subscribe to current user changes
+    this.userSubscription = this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });    
+    // If currentUser is empty, try to get it from the service
+    if (this.currentUser && this.authService.isLogin$()) {
+      this.authService.getCurrentUser().pipe(
+        map((data:any) => {this.authService.currentUser.next(data);this.currentUser = data}),
+        tap(() => {    
+          if(this.currentUser && this.currentUser.tenantId){      
+          // connect to signalR:
+          this.signalR.connect(); 
+          this.getUnreadedMsg();
+          this.getMsgList();
+    }})
+      ).subscribe();
+    }
+  }
+
+    // For Notifications:
+  getUnreadedMsg(){
+  this.notificationListener.getUnreadedMsg();         
+  }
+
+  makeAllMsgAsReaded(){
+    this.notificationListener.makeAllMsgAsReaded();
+  }
+
+  getMsgList(){
+    this.notificationListener.makeNotificationListEmpty();
+    this.notificationListener.getMsgList();
   }
 
   ngOnDestroy(): void {
@@ -372,7 +411,7 @@ export class DashboardAdminComponent implements OnInit, OnDestroy{
         style: 'currency',
         currency: 'SYP',
         minimumFractionDigits: 0,
-        maximumFractionDigits: 2
+        maximumFractionDigits: 0
       }).format(amount);
   }
 }

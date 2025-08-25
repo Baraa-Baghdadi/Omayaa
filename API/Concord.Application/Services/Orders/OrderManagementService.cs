@@ -1,8 +1,11 @@
 ﻿using Concord.Application.DTO.Orders;
 using Concord.Application.Extentions;
+using Concord.Application.Services.Notifications;
 using Concord.Application.Services.Providers;
+using Concord.Application.Services.Telegram;
 using Concord.Domain.Enums;
 using Concord.Domain.Models.Identity;
+using Concord.Domain.Models.Notifications;
 using Concord.Domain.Models.Orders;
 using Concord.Domain.Models.Products;
 using Concord.Domain.Models.Providers;
@@ -10,6 +13,7 @@ using Concord.Domain.Repositories;
 using Microsoft.AspNetCore.Identity;
 using System.Linq.Expressions;
 using System.Security.Claims;
+using System.Text;
 
 namespace Concord.Application.Services.Orders
 {
@@ -19,26 +23,29 @@ namespace Concord.Application.Services.Orders
     public class OrderManagementService : IOrderManagementService
     {
         private readonly IGenericRepository<Order> _orderRepository;
-        private readonly IGenericRepository<OrderItem> _orderItemRepository;
         private readonly IGenericRepository<Product> _productRepository;
         private readonly IGenericRepository<Provider> _providerRepository;
         private readonly IProviderManagementService _providerManagementService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IAdminNotifications _notificationProviderService;
+        private readonly ITelegramService _telegramService;
 
         public OrderManagementService(
             IGenericRepository<Order> orderRepository,
-            IGenericRepository<OrderItem> orderItemRepository,
             IGenericRepository<Product> productRepository,
             IGenericRepository<Provider> providerRepository,
             IProviderManagementService providerManagementService,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IAdminNotifications notificationProviderService,
+            ITelegramService telegramService)
         {
             _orderRepository = orderRepository;
-            _orderItemRepository = orderItemRepository;
             _productRepository = productRepository;
             _providerRepository = providerRepository;
             _providerManagementService = providerManagementService;
             _userManager = userManager;
+            _notificationProviderService = notificationProviderService;
+            _telegramService = telegramService;
         }
 
         /// <summary>
@@ -248,6 +255,10 @@ namespace Concord.Application.Services.Orders
                 await _orderRepository.AddAsync(order);
                 await _orderRepository.SaveChangesAsync();
 
+                var telegramMsg = CreateOrderTelegramMessage(order);
+
+                await _telegramService.SendMessageToOmayyaBot(telegramMsg);
+
                 // Return the created order with all details
                 return await GetOrderByIdAsync(order.Id);
             }
@@ -348,6 +359,21 @@ namespace Concord.Application.Services.Orders
 
                 await _orderRepository.AddAsync(order);
                 await _orderRepository.SaveChangesAsync();
+
+                var telegramMsg = CreateOrderTelegramMessage(order);
+
+                // send notification to instructor:
+                try
+                {
+                    await SendNotificationForAdmin(provider.Id, order.Id, orderNumber);
+                    await _telegramService.SendMessageToOmayyaBot(telegramMsg);
+                }
+
+                catch(Exception ex) {
+                    
+                    throw new Exception(ex.Message);
+                }
+
 
                 // Return the created order with all details
                 return await GetOrderByIdAsync(order.Id);
@@ -530,7 +556,7 @@ namespace Concord.Application.Services.Orders
                 var orders = allOrders.ToList();
 
                 var totalOrders = orders.Count;
-                var totalRevenue = orders.Sum(o => o.FinalAmount);
+                var totalRevenue = orders.Where(o => o.Status == OrderStatus.Completed).Sum(o => o.FinalAmount);
 
                 // Current month revenue
                 var currentMonth = DateTime.UtcNow.Month;
@@ -538,23 +564,23 @@ namespace Concord.Application.Services.Orders
                 var monthlyRevenue = orders
                     .Where(o =>
                                o.OrderDate.Month == currentMonth &&
-                               o.OrderDate.Year == currentYear)
+                               o.OrderDate.Year == currentYear && o.Status == OrderStatus.Completed)
                     .Sum(o => o.FinalAmount);
 
-                var averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+                var averageOrderValue = totalOrders > 0 ? totalRevenue / orders.Where(o => o.Status == OrderStatus.Completed).Count() : 0;
 
                 // Monthly revenue data for last 12 months
                 var monthlyData = new List<MonthlyRevenueDto>();
                 for (int i = 11; i >= 0; i--)
                 {
                     var date = DateTime.UtcNow.AddMonths(-i);
-                    var monthOrders = orders.Where(o => o.OrderDate.Month == date.Month &&
+                    var monthOrders = orders.Where(o =>  o.OrderDate.Month == date.Month &&
                                                        o.OrderDate.Year == date.Year);
 
                     monthlyData.Add(new MonthlyRevenueDto
                     {
                         Month = date.ToString("MMM yyyy"),
-                        Revenue = monthOrders.Sum(o => o.FinalAmount),
+                        Revenue = monthOrders.Where(o => o.Status == OrderStatus.Completed).Sum(o => o.FinalAmount),
                         OrderCount = monthOrders.Count()
                     });
                 }
@@ -669,6 +695,7 @@ namespace Concord.Application.Services.Orders
                 DiscountAmount = order.DiscountAmount,
                 FinalAmount = order.FinalAmount,
                 Notes = order.Notes,
+                Status = order.Status,
                 OrderDate = order.OrderDate,
                 DeliveryDate = order.DeliveryDate,
                 CreatedAt = order.CreatedAt,
@@ -694,25 +721,97 @@ namespace Concord.Application.Services.Orders
             };
         }
 
+        private async Task SendNotificationForAdmin(Guid providerId, Guid orderId, string omayyaOrderId)
+        {
+            await _notificationProviderService.CreateOrderNotification(providerId, orderId, omayyaOrderId,
+                $@"تم إنشاء طلب جديد برقم : {omayyaOrderId}", NotificationTypeEnum.Admin);
+        }
+
+        // Helper class for expression combination
+        public class ReplaceExpressionVisitor : ExpressionVisitor
+        {
+            private readonly Expression _oldValue;
+            private readonly Expression _newValue;
+
+            public ReplaceExpressionVisitor(Expression oldValue, Expression newValue)
+            {
+                _oldValue = oldValue;
+                _newValue = newValue;
+            }
+
+            public override Expression Visit(Expression node)
+            {
+                return node == _oldValue ? _newValue : base.Visit(node);
+            }
+        }
+
+        private string CreateOrderTelegramMessage(Order order)
+        {
+            var message = new StringBuilder();
+
+            // Header with emoji
+            message.AppendLine("🛒 **طلبية جديدة**");
+            message.AppendLine("━━━━━━━━━━━━━━━━━━━━━━");
+
+            // Order basic info
+            message.AppendLine($"📋 **رقم الطلبية:** {order.OrderNumber}");
+            message.AppendLine($"🏪 **المورد:** {order.Provider?.ProviderName ?? "غير محدد"}");
+            message.AppendLine($"📅 **تاريخ الطلبية:** {order.OrderDate:dd/MM/yyyy HH:mm}");
+
+            if (order.DeliveryDate.HasValue)
+            {
+                message.AppendLine($"🚚 **تاريخ التسليم المتوقع:** {order.DeliveryDate.Value:dd/MM/yyyy}");
+            }
+
+            message.AppendLine();
+
+            // Order items
+            message.AppendLine("📦 **عناصر الطلبية:**");
+            message.AppendLine("━━━━━━━━━━━━━━━━━━━━━━");
+
+            foreach (var item in order.OrderItems)
+            {
+                message.AppendLine($"• **{item.ProductName}**");
+                message.AppendLine($"  ◦ الكمية: {item.Quantity}");
+                message.AppendLine($"  ◦ السعر للوحدة: {item.UnitPrice:N0} ل.س");
+                message.AppendLine($"  ◦ المجموع: {item.TotalPrice:N0} ل.س");
+
+                if (!string.IsNullOrEmpty(item.Notes))
+                {
+                    message.AppendLine($"  ◦ ملاحظات: {item.Notes}");
+                }
+                message.AppendLine();
+            }
+
+            // Financial summary
+            message.AppendLine("💰 **الملخص المالي:**");
+            message.AppendLine("━━━━━━━━━━━━━━━━━━━━━━");
+            message.AppendLine($"💵 **المبلغ الإجمالي:** {order.TotalAmount:N0} ل.س");
+
+            if (order.DiscountAmount > 0)
+            {
+                message.AppendLine($"🏷️ **الخصم:** {order.DiscountAmount:N0} ل.س");
+            }
+
+            message.AppendLine($"✅ **المبلغ النهائي:** {order.FinalAmount:N0} ل.س");
+
+            // Notes if available
+            if (!string.IsNullOrEmpty(order.Notes))
+            {
+                message.AppendLine();
+                message.AppendLine("📝 **ملاحظات إضافية:**");
+                message.AppendLine($"{order.Notes}");
+            }
+
+            message.AppendLine();
+            message.AppendLine("━━━━━━━━━━━━━━━━━━━━━━");
+            message.AppendLine($"🕐 تم إنشاء الطلبية في: {order.CreatedAt:dd/MM/yyyy HH:mm}");
+
+            return message.ToString();
+        }
+
+
         #endregion
 
-    }
-
-    // Helper class for expression combination
-    public class ReplaceExpressionVisitor : ExpressionVisitor
-    {
-        private readonly Expression _oldValue;
-        private readonly Expression _newValue;
-
-        public ReplaceExpressionVisitor(Expression oldValue, Expression newValue)
-        {
-            _oldValue = oldValue;
-            _newValue = newValue;
-        }
-
-        public override Expression Visit(Expression node)
-        {
-            return node == _oldValue ? _newValue : base.Visit(node);
-        }
     }
 }

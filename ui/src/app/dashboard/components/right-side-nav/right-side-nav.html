@@ -54,3 +54,66 @@
     </ul>
   </div>
 </div>
+
+
+
+<!-- Bell & Notification -->
+<div *ngIf="currentUser && currentUser.tenantId" class="allBell ms-4" (click)="showMsgList()">
+  <div>
+    <div>
+      <i class="fa fa-bell fs-2 c-pointer"></i>
+      <span
+      style="font-size: 10px"
+      class=" badge bg-danger"
+      *ngIf="notificationListener.unreadNotificationCount$ | async as count"
+    >
+      {{ count }}
+    </span>
+    </div>
+  </div>
+  <!-- Scroll Pagination -->
+   <div
+    *ngIf="isShowListOfNotification"
+    class="list"
+    style="z-index: 1000 !important;overflow-y: scroll !important;"
+  >
+    <!-- Notifications List -->
+    <div
+      *ngIf="notificationListener.NotificationList$ | async as List"
+      style="z-index: 1000 !important"
+    >
+    <div class="close-notification c-pointer mt-2"><i class="fa fa-times fs-5" aria-hidden="true"></i></div>
+      <h5
+        class="text-center text-danger mt-2"
+        *ngIf="List.totalCount === 0"
+      >
+        {{"لا يوجد إشعارات" }}
+      </h5>
+      <h5
+        class="text-center text-dark p-2 border-bottom"
+        *ngIf="List.totalCount !== 0"
+      >
+        {{ "الإشعارات" }}
+      </h5>
+      <div
+        class="list2"
+      >
+        <div
+          class="row border-bottom p-2 notification"
+          *ngFor="let item of List"
+        >
+          <div class="col-1">
+            <i
+              class="fa fa-calendar fs-4 ms-2 mt-2 innerBell"
+              aria-hidden="true"
+            ></i>
+          </div>
+          <div class="notification-content col-7">
+            <p class="ms-3 fs-14">{{ item.content }}</p>
+          </div>
+          <p class="col-3 fs-14">{{(item.createdOn * 1000) | date:'yyyy-MM-dd'}}</p>
+        </div>
+      </div>
+    </div>
+  </div> 
+</div>

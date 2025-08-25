@@ -30,7 +30,8 @@ namespace Concord.Domain.Seed.Identity
                     DisplayName = "admin",
                     UserName = "admin",
                     Email = "admin@omayya.com",
-                    Role = "Admin"
+                    Role = "Admin",
+                    TenantId = new Guid("11111111-1111-1111-1111-111111111111")
                 };
 
                 adminUser.PhoneNumberConfirmed = true;
@@ -41,6 +42,18 @@ namespace Concord.Domain.Seed.Identity
                 {
                     await userManager.AddToRoleAsync(adminUser, "Admin");
                 }
+            }
+            else
+            {
+                adminUser.TenantId = new Guid("11111111-1111-1111-1111-111111111111");
+                var updateResult = await userManager.UpdateAsync(adminUser);
+
+                if (!updateResult.Succeeded)
+                {
+                    // Handle update failure if needed
+                    throw new InvalidOperationException($"Failed to update admin user tenant: {string.Join(", ", updateResult.Errors.Select(e => e.Description))}");
+                }
+
             }
         }
     }

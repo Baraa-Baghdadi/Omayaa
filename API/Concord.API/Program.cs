@@ -1,11 +1,14 @@
 using Concord.Application.Services.Account.Providers;
 using Concord.Application.Services.AdminDashboard;
 using Concord.Application.Services.Categories;
+using Concord.Application.Services.Hub;
 using Concord.Application.Services.Mail;
+using Concord.Application.Services.Notifications;
 using Concord.Application.Services.Orders;
 using Concord.Application.Services.Products;
 using Concord.Application.Services.Providers;
 using Concord.Application.Services.RefreshToken;
+using Concord.Application.Services.Telegram;
 using Concord.Application.Services.Token;
 using Concord.Domain.Context.Application;
 using Concord.Domain.Context.Identity;
@@ -22,6 +25,10 @@ using System.Reflection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container
+builder.Services.AddHttpClient();
+
 
 // Add services to the container.
 
@@ -70,7 +77,24 @@ builder.Services.AddAuthentication(options =>
             ValidateAudience = false,
             ClockSkew = TimeSpan.Zero,
         };
-    });
+
+        // Important: Configure SignalR to read token from query string
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notify"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
+    }
+    );
 
 // Add authorization and authentication
 builder.Services.AddAuthorization();
@@ -87,6 +111,12 @@ builder.Services.AddTransient<ICategoryService, CategoryService>();
 builder.Services.AddTransient<IProductManagementService, ProductManagementService>();
 builder.Services.AddTransient<IOrderManagementService, OrderManagementService>();
 builder.Services.AddTransient<IDashboardService, DashboardService>();
+builder.Services.AddTransient<IAdminNotifications, AdminNotifications>();
+builder.Services.AddTransient<ITelegramService, TelegramService>();
+
+// For SignalR
+builder.Services.AddTransient<BroadcastHub>();
+
 
 
 // For Add Auto mapper to our project
@@ -145,18 +175,21 @@ builder.Services.AddSwaggerGen(c =>
     c.EnableAnnotations();
 });
 
+builder.Services.AddProblemDetails();
+
 // Enable Cors For FrontEnd:
 // Add CORS policy
-builder.Services.AddCors(options =>
+// Enable Cors For FrontEnd:
+builder.Services.AddCors(c =>
 {
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy
-            .AllowAnyOrigin() // allows all origins
-            .AllowAnyMethod() // allows GET, POST, PUT, DELETE, etc.
-            .AllowAnyHeader(); // allows all headers
-    });
+    c.AddPolicy("AllowAll", options => options
+        .WithOrigins("http://localhost:4200", "https://omayya-class.web.app") // Specify your frontend URLs
+        .AllowCredentials()
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+    );
 });
+
 
 // add signalR:
 builder.Services.AddSignalR();
@@ -220,10 +253,36 @@ app.UseStaticFiles();
 app.UseMiddleware<AuthenticationMiddleware>();
 
 
+// For signalR:
+app.Use(async (httpContext, next) =>
+{
+    var accessToken = httpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+    if (string.IsNullOrEmpty(accessToken))
+    {
+        accessToken = httpContext.Request.Query["access_token"];
+    }
+
+    var path = httpContext.Request.Path;
+
+    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notify"))
+    {
+        httpContext.Request.Headers["Authorization"] = "Bearer " + accessToken;
+    }
+
+    await next();
+});
+
+
+
 app.UseAuthentication();
 app.UseRouting();
 app.UseAuthorization();
 
+// add signalR:
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapHub<BroadcastHub>("/notify");
+});
 
 
 app.MapControllers();

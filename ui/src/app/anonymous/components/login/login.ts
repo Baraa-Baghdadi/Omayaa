@@ -87,6 +87,7 @@ export class Login {
             this.router.navigate(['/provider']);
           }
           else{
+            this.authService.currentUser.next(data);
             this.router.navigate(['/app']);
           }
           },
