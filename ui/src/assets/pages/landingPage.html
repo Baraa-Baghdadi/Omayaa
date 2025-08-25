@@ -1160,12 +1160,17 @@
 
         /* Mobile Navigation Improvements - Enhanced Visibility */
         @media (max-width: 768px) {
+            html {
+                -webkit-overflow-scrolling: touch;
+            }
             .navbar-custom {
                 background: #ffffff;
                 backdrop-filter: none;
                 border-bottom: 3px solid var(--accent-primary);
                 box-shadow: 0 4px 20px rgba(212, 175, 55, 0.25);
                 z-index: 9999;
+                -webkit-transform: translateZ(0);  /* Force GPU layer */
+                backface-visibility: hidden;       /* Prevent flicker */
                 position: relative;
             }
 
@@ -1398,6 +1403,8 @@
                 left: 0 !important;
                 right: 0 !important;
                 width: 100% !important;
+                -webkit-transform: translateZ(0);  /* Force GPU layer */
+                backface-visibility: hidden;       /* Prevent flicker */
             }
 
             /* Add padding to body to compensate for fixed navbar */
