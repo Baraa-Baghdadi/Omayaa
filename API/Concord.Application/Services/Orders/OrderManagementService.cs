@@ -2,6 +2,7 @@
 using Concord.Application.Extentions;
 using Concord.Application.Services.Notifications;
 using Concord.Application.Services.Providers;
+using Concord.Application.Services.Telegram;
 using Concord.Domain.Enums;
 using Concord.Domain.Models.Identity;
 using Concord.Domain.Models.Notifications;
@@ -12,6 +13,7 @@ using Concord.Domain.Repositories;
 using Microsoft.AspNetCore.Identity;
 using System.Linq.Expressions;
 using System.Security.Claims;
+using System.Text;
 
 namespace Concord.Application.Services.Orders
 {
@@ -26,6 +28,7 @@ namespace Concord.Application.Services.Orders
         private readonly IProviderManagementService _providerManagementService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IAdminNotifications _notificationProviderService;
+        private readonly ITelegramService _telegramService;
 
         public OrderManagementService(
             IGenericRepository<Order> orderRepository,
@@ -33,7 +36,8 @@ namespace Concord.Application.Services.Orders
             IGenericRepository<Provider> providerRepository,
             IProviderManagementService providerManagementService,
             UserManager<ApplicationUser> userManager,
-            IAdminNotifications notificationProviderService)
+            IAdminNotifications notificationProviderService,
+            ITelegramService telegramService)
         {
             _orderRepository = orderRepository;
             _productRepository = productRepository;
@@ -41,6 +45,7 @@ namespace Concord.Application.Services.Orders
             _providerManagementService = providerManagementService;
             _userManager = userManager;
             _notificationProviderService = notificationProviderService;
+            _telegramService = telegramService;
         }
 
         /// <summary>
@@ -250,6 +255,10 @@ namespace Concord.Application.Services.Orders
                 await _orderRepository.AddAsync(order);
                 await _orderRepository.SaveChangesAsync();
 
+                var telegramMsg = CreateOrderTelegramMessage(order);
+
+                await _telegramService.SendMessageToOmayyaBot(telegramMsg);
+
                 // Return the created order with all details
                 return await GetOrderByIdAsync(order.Id);
             }
@@ -351,12 +360,17 @@ namespace Concord.Application.Services.Orders
                 await _orderRepository.AddAsync(order);
                 await _orderRepository.SaveChangesAsync();
 
+                var telegramMsg = CreateOrderTelegramMessage(order);
+
                 // send notification to instructor:
                 try
                 {
                     await SendNotificationForAdmin(provider.Id, order.Id, orderNumber);
+                    await _telegramService.SendMessageToOmayyaBot(telegramMsg);
                 }
+
                 catch(Exception ex) {
+                    
                     throw new Exception(ex.Message);
                 }
 
@@ -729,6 +743,71 @@ namespace Concord.Application.Services.Orders
             {
                 return node == _oldValue ? _newValue : base.Visit(node);
             }
+        }
+
+        private string CreateOrderTelegramMessage(Order order)
+        {
+            var message = new StringBuilder();
+
+            // Header with emoji
+            message.AppendLine("🛒 **طلبية جديدة**");
+            message.AppendLine("━━━━━━━━━━━━━━━━━━━━━━");
+
+            // Order basic info
+            message.AppendLine($"📋 **رقم الطلبية:** {order.OrderNumber}");
+            message.AppendLine($"🏪 **المورد:** {order.Provider?.ProviderName ?? "غير محدد"}");
+            message.AppendLine($"📅 **تاريخ الطلبية:** {order.OrderDate:dd/MM/yyyy HH:mm}");
+
+            if (order.DeliveryDate.HasValue)
+            {
+                message.AppendLine($"🚚 **تاريخ التسليم المتوقع:** {order.DeliveryDate.Value:dd/MM/yyyy}");
+            }
+
+            message.AppendLine();
+
+            // Order items
+            message.AppendLine("📦 **عناصر الطلبية:**");
+            message.AppendLine("━━━━━━━━━━━━━━━━━━━━━━");
+
+            foreach (var item in order.OrderItems)
+            {
+                message.AppendLine($"• **{item.ProductName}**");
+                message.AppendLine($"  ◦ الكمية: {item.Quantity}");
+                message.AppendLine($"  ◦ السعر للوحدة: {item.UnitPrice:N0} ل.س");
+                message.AppendLine($"  ◦ المجموع: {item.TotalPrice:N0} ل.س");
+
+                if (!string.IsNullOrEmpty(item.Notes))
+                {
+                    message.AppendLine($"  ◦ ملاحظات: {item.Notes}");
+                }
+                message.AppendLine();
+            }
+
+            // Financial summary
+            message.AppendLine("💰 **الملخص المالي:**");
+            message.AppendLine("━━━━━━━━━━━━━━━━━━━━━━");
+            message.AppendLine($"💵 **المبلغ الإجمالي:** {order.TotalAmount:N0} ل.س");
+
+            if (order.DiscountAmount > 0)
+            {
+                message.AppendLine($"🏷️ **الخصم:** {order.DiscountAmount:N0} ل.س");
+            }
+
+            message.AppendLine($"✅ **المبلغ النهائي:** {order.FinalAmount:N0} ل.س");
+
+            // Notes if available
+            if (!string.IsNullOrEmpty(order.Notes))
+            {
+                message.AppendLine();
+                message.AppendLine("📝 **ملاحظات إضافية:**");
+                message.AppendLine($"{order.Notes}");
+            }
+
+            message.AppendLine();
+            message.AppendLine("━━━━━━━━━━━━━━━━━━━━━━");
+            message.AppendLine($"🕐 تم إنشاء الطلبية في: {order.CreatedAt:dd/MM/yyyy HH:mm}");
+
+            return message.ToString();
         }
 
 

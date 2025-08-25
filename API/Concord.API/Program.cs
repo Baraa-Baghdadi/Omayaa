@@ -8,6 +8,7 @@ using Concord.Application.Services.Orders;
 using Concord.Application.Services.Products;
 using Concord.Application.Services.Providers;
 using Concord.Application.Services.RefreshToken;
+using Concord.Application.Services.Telegram;
 using Concord.Application.Services.Token;
 using Concord.Domain.Context.Application;
 using Concord.Domain.Context.Identity;
@@ -24,6 +25,10 @@ using System.Reflection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container
+builder.Services.AddHttpClient();
+
 
 // Add services to the container.
 
@@ -107,7 +112,9 @@ builder.Services.AddTransient<IProductManagementService, ProductManagementServic
 builder.Services.AddTransient<IOrderManagementService, OrderManagementService>();
 builder.Services.AddTransient<IDashboardService, DashboardService>();
 builder.Services.AddTransient<IAdminNotifications, AdminNotifications>();
-// for can inject " private readonly BroadcastHub _hub;" in another class:
+builder.Services.AddTransient<ITelegramService, TelegramService>();
+
+// For SignalR
 builder.Services.AddTransient<BroadcastHub>();
 
 
